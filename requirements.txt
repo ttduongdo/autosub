@@ -1,0 +1,7 @@
+transformers
+torch
+demucs
+yt-dlp
+gradio
+jiwer
+peft
