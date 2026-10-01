@@ -5,3 +5,5 @@ yt-dlp
 gradio
 jiwer
 peft
+pytest
+python-dotenv

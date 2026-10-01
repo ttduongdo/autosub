@@ -46,18 +46,48 @@ def _align_single_segment(waveform: "torch.Tensor",
     """Slice audio for this segment's time range, run CTC forced alignment
     against segment['text'], return per-word timestamps offset by segment['start']."""
     start_sample = int(segment["start"] * sample_rate)
-    end_sample = int(segment["end"] * sample_rate)
+    # Whisper's return_timestamps=True can emit end=None (commonly on the
+    # last segment, if generation stops before the audio window closes) —
+    # treat that as "runs to the end of the available audio."
+    if segment["end"] is None:
+        end_sample = waveform.shape[1]
+    else:
+        end_sample = min(int(segment["end"] * sample_rate), waveform.shape[1])
     segment_waveform = waveform[:, start_sample:end_sample]
+
+    if segment_waveform.shape[1] == 0:
+        # Segment timestamps fall outside the actual audio (can happen with
+        # Whisper's segment-level timestamps near the end of a track) —
+        # nothing to align here, so skip it rather than crash.
+        return []
+
+    # wav2vec2's conv feature extractor needs a minimum number of samples to
+    # produce even one output frame. A real but very short segment (e.g. a
+    # single short word) can fall below that floor, so pad with silence
+    # rather than skip — unlike the zero-length case above, there's real
+    # audio here, just not enough of it for the model to run.
+    min_samples = int(0.05 * sample_rate)  # ~50ms floor
+    if segment_waveform.shape[1] < min_samples:
+        pad_amount = min_samples - segment_waveform.shape[1]
+        segment_waveform = torch.nn.functional.pad(segment_waveform, (0, pad_amount))
 
     # 1. get emissions
     with torch.inference_mode():
-        emissions, _ = model(segment_waveform)
-        emissions = torch.log_softmax(emissions, dim=-1)
+        logits = model(segment_waveform).logits
+        emissions = torch.log_softmax(logits, dim=-1)
     emission = emissions[0] # drop batch dim -> [num_frames, vocab_size]
 
     # 2. tokenize the known transcript for this segment
     cleaned = _clean_text(segment["text"])
     tokens = processor.tokenizer(cleaned).input_ids # list[int]
+
+    if len(tokens) > emission.shape[0]:
+        # CTC needs at least one frame per target token. More characters
+        # than available frames means the segment's text is too long for
+        # its time window — usually a Whisper transcription artifact (e.g.
+        # hallucinated/looping repeats on music) rather than something
+        # alignment can fix. Skip it rather than crash the whole run.
+        return []
 
     # 3. forced_align
     targets = torch.tensor([tokens], dtype=torch.int32)

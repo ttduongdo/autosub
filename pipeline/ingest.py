@@ -13,10 +13,16 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 def _download_audio(url: str) -> Path:
     """Download audio for a URL via yt-dlp.
-    Returns the raw downloaded file path."""
+    Returns the raw downloaded file path.
+
+    Uses cookies from Chrome so YouTube treats the request as an
+    authenticated browser session rather than flagging it as bot traffic.
+    Requires being logged into YouTube in Chrome on this machine.
+    """
     ydl_opts = {
         "format": "bestaudio/best",
         "outtmpl": str(OUTPUT_DIR / "%(id)s.%(ext)s"),
+        "cookiesfrombrowser": ("chrome",),
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info_dict = ydl.extract_info(url, download=True)
