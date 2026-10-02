@@ -81,12 +81,19 @@ def _align_single_segment(waveform: "torch.Tensor",
     cleaned = _clean_text(segment["text"])
     tokens = processor.tokenizer(cleaned).input_ids # list[int]
 
+    if len(tokens) == 0:
+        # Segment's text was entirely punctuation/whitespace and _clean_text
+        # stripped it down to nothing — no characters to align.
+        return []
+
     if len(tokens) > emission.shape[0]:
         # CTC needs at least one frame per target token. More characters
         # than available frames means the segment's text is too long for
-        # its time window — usually a Whisper transcription artifact (e.g.
-        # hallucinated/looping repeats on music) rather than something
-        # alignment can fix. Skip it rather than crash the whole run.
+        # its time window — in practice this has come from Whisper getting
+        # stuck in a repetition loop on music (e.g. generating the same
+        # short phrase dozens of times in a row), a known failure mode on
+        # non-speech/singing audio. Not something alignment can fix, so
+        # skip it rather than crash the whole run.
         return []
 
     # 3. forced_align

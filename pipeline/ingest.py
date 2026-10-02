@@ -15,14 +15,15 @@ def _download_audio(url: str) -> Path:
     """Download audio for a URL via yt-dlp.
     Returns the raw downloaded file path.
 
-    Uses cookies from Chrome so YouTube treats the request as an
-    authenticated browser session rather than flagging it as bot traffic.
-    Requires being logged into YouTube in Chrome on this machine.
+    Note: YouTube is not reliably supported right now — its bot detection
+    has been blocking yt-dlp even with browser cookies, with no workaround
+    found so far (see project history as of 2026-10). SoundCloud and other
+    platforms yt-dlp supports work fine. Revisit YouTube support if/when
+    yt-dlp or YouTube's behavior changes.
     """
     ydl_opts = {
         "format": "bestaudio/best",
         "outtmpl": str(OUTPUT_DIR / "%(id)s.%(ext)s"),
-        "cookiesfrombrowser": ("chrome",),
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info_dict = ydl.extract_info(url, download=True)
