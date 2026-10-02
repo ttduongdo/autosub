@@ -281,6 +281,25 @@ Whisper segment at a time. Step by step:
 1. **Slicing:** converts the segment's `start`/`end` (in seconds) into sample
    indices and slices just that span out of the full-track waveform — so the
    model only processes this segment's audio, not the whole track at once.
+   Three edge cases, discovered by running this against a real song rather
+   than synthesized test speech, are handled explicitly before the model
+   ever runs:
+   - **`segment["end"] is None`:** Whisper's `return_timestamps=True` can
+     leave the last segment's end time unset if generation stops before the
+     audio window closes. Treated as "runs to the end of the available
+     audio" (`end_sample = waveform.shape[1]`).
+   - **Empty slice:** if a segment's timestamps fall entirely outside the
+     real audio (bad/out-of-range timestamps), the slice comes back with
+     zero samples. Python slicing never raises an error for this — it
+     silently returns an empty tensor, which only blows up later inside the
+     model's conv layers with a confusing shape error. Detected explicitly
+     and the segment is skipped (`return []`) rather than crashing the
+     whole alignment run.
+   - **Too-short slice:** a genuinely short but real segment (e.g. a single
+     short word) can have fewer samples than wav2vec2's conv feature
+     extractor needs to produce even one output frame. Unlike the empty
+     case, there's real audio here — it's padded with trailing silence up
+     to a ~50ms floor via `torch.nn.functional.pad`, rather than skipped.
 2. **Emissions:** runs the sliced audio through the wav2vec2 model
    (`torch.inference_mode()` disables gradient tracking since this is
    inference, not training — saves memory and time), then applies
@@ -288,7 +307,15 @@ Whisper segment at a time. Step by step:
    per character per frame. This probability grid is called the "emission."
 3. **Tokenizing the known text:** cleans the segment's Whisper text and
    converts it into the sequence of token IDs the forced-alignment search
-   will try to match against the emission grid.
+   will try to match against the emission grid. A fourth edge case lives
+   here: CTC alignment mathematically requires at least one audio frame per
+   target character — if the segment's text is longer than the number of
+   available frames (seen in practice on a segment where Whisper mistranscribed
+   a lyric and kept generating text well past its 20-second timestamp
+   window), `forced_align` cannot produce a valid path at all and raises.
+   Checked explicitly (`len(tokens) > emission.shape[0]`)
+   and skipped rather than crashing — the fix for the underlying cause
+   belongs in better transcription (stage 3 / fine-tuning), not here.
 4. **`torchaudio.functional.forced_align`:** the actual alignment algorithm
    (a dynamic-programming search, conceptually similar to Viterbi decoding)
    — given the emission grid and the known token sequence, finds the most

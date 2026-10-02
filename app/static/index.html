@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AutoSub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/wavesurfer.js@7/dist/wavesurfer.min.js"></script>
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <h1>AutoSub</h1>
+    </header>
+
+    <main class="layout">
+      <section class="panel input-panel">
+        <div class="input-row">
+          <div class="field-group field-url">
+            <label for="url-input">URL</label>
+            <input id="url-input" type="text" placeholder="SoundCloud or any link yt-dlp supports" />
+          </div>
+
+          <div class="divider-vertical"><span>or</span></div>
+
+          <div class="field-group field-file">
+            <label for="file-input" class="file-drop" id="file-drop-label">
+              <span id="file-drop-text">Upload</span>
+            </label>
+            <input id="file-input" type="file" accept="audio/*,video/*" hidden />
+          </div>
+
+          <button id="process-button" class="primary-button">Process</button>
+        </div>
+
+        <div id="status-line" class="status-line" hidden></div>
+      </section>
+
+      <section class="panel output-panel">
+        <div id="karaoke-empty" class="karaoke-empty">Processed output will appear here.</div>
+        <div id="karaoke-content" hidden>
+          <div class="output-toolbar">
+            <div class="stem-toggle" id="stem-toggle">
+              <button class="stem-button active" data-stem="mix">Full song</button>
+              <button class="stem-button" data-stem="vocals">Vocals only</button>
+              <button class="stem-button" data-stem="instrumental">Instrumental only</button>
+            </div>
+            <div class="downloads" id="downloads">
+              <a id="srt-link" class="download-link" href="#" download>.srt</a>
+              <a id="vtt-link" class="download-link" href="#" download>.vtt</a>
+            </div>
+          </div>
+
+          <div class="transport">
+            <button id="play-button" class="play-button" aria-label="Play">▶</button>
+            <span id="time-display" class="time-display">0:00 / 0:00</span>
+            <div class="zoom-control">
+              <label for="zoom-slider">Zoom</label>
+              <input id="zoom-slider" type="range" min="20" max="400" value="80" />
+            </div>
+          </div>
+
+          <div id="scroll-sync" class="scroll-sync">
+            <div id="waveform"></div>
+            <div id="lyrics-strip" class="lyrics-strip"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>
