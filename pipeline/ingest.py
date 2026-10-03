@@ -1,6 +1,12 @@
 """
 TODO:
 - resolve Spotify/Apple Music links to a playable source
+- re-enable YouTube URL support here (see _download_audio's note below).
+  finetune/dataset.py re-enabled YouTube search (ytsearch1:) for building
+  training data after confirming 4/4 clean downloads with no bot-detection
+  in live testing (2026-10) — but that was a small sample, so the main
+  app's URL-based path was deliberately left untouched pending more
+  evidence before trusting it for end users.
 """
 import subprocess
 from pathlib import Path
