@@ -1,12 +1,27 @@
 """Build fine-tuning dataset manifest from lyric/audio pairs.
 
-Primary source: Billboard Hot 100 (via a daily-updated public JSON
-mirror) for song/artist names, lyrics.ovh for lyric text, and the existing
-pipeline.ingest.resolve_input (yt-dlp) for audio. This intentionally
-prioritizes training-data relevance (recent, popular, mainstream music —
-what the app will actually see in real use) over strict licensing
-cleanliness, since this is a non-commercial portfolio/demonstration
-project. See ARCHITECTURE.md's data/rights notes for the fuller discussion.
+Primary source: Billboard Hot 100 (via a daily-updated public JSON mirror)
+for song/artist names, LRCLIB for line-level timestamped (synced) lyrics,
+and the existing pipeline.ingest.resolve_input (yt-dlp) for audio. This
+intentionally prioritizes training-data relevance (recent, popular,
+mainstream music — what the app will actually see in real use) over strict
+licensing cleanliness, since this is a non-commercial portfolio/
+demonstration project. See ARCHITECTURE.md's data/rights notes for the
+fuller discussion.
+
+Using LRCLIB specifically (rather than, say, running Whisper on each
+training song to get segment timing) matters because it avoids a circular
+dependency: using the model's own transcription to generate the timing
+data used to train that same model would bake in whatever errors the
+baseline already makes, rather than training against independently-correct
+ground truth. LRCLIB's timestamps come from human-submitted synced lyrics
+(the same format karaoke apps use), with no ASR model involved.
+
+Each manifest record stores lyrics_segments (a list of {start, end, text}
+line-level segments), not one lyrics_text blob — Whisper processes audio
+in ~30s windows and caps decoder labels at 448 tokens, so a full song's
+lyrics as one example doesn't fit. finetune/train.py groups these segments
+into Whisper-sized chunks per song.
 
 Secondary/fallback sources (optional use, not the primary path):
 - Jamendo: Creative Commons tracks, audio + lyrics both available directly
@@ -38,7 +53,7 @@ from pipeline.ingest import _normalize_audio, resolve_input
 DetectorFactory.seed = 0
 
 BILLBOARD_CHART_URL = "https://raw.githubusercontent.com/mhollingshead/billboard-hot-100/main/recent.json"
-LYRICS_OVH_URL = "https://api.lyrics.ovh/v1"
+LRCLIB_API_URL = "https://lrclib.net/api/get"
 
 JAMENDO_CLIENT_ID = os.environ.get("JAMENDO_CLIENT_ID", "")
 JAMENDO_API_URL = "https://api.jamendo.com/v3.0/tracks"
@@ -47,7 +62,10 @@ RAW_DIR = Path(__file__).parents[1] / "data" / "raw" / "finetune"
 RAW_DIR.mkdir(parents=True, exist_ok=True)
 
 
-# --- Billboard + lyrics.ovh source (primary) ---
+# --- Billboard + LRCLIB source (primary) ---
+
+LRC_LINE_RE = re.compile(r"^\[(\d{2}):(\d{2})(?:\.(\d{1,3}))?\](.*)$")
+
 
 def _fetch_billboard_chart() -> list[dict]:
     """Fetch the current Billboard Hot 100 as a list of {song, artist, ...}
@@ -60,8 +78,9 @@ def _fetch_billboard_chart() -> list[dict]:
 
 def _clean_artist_name(artist: str) -> str:
     """Strip collaborator/feature credits down to the primary artist name
-    for lyrics.ovh lookups, which expect a single artist (e.g. "Karol G
-    With Drake" -> "Karol G"). lyrics.ovh 404s on the full collab string.
+    for lyrics lookups, which expect a single artist (e.g. "Karol G With
+    Drake" -> "Karol G"). LRCLIB (like lyrics.ovh before it) matches best
+    on just the primary artist, not the full collab credit string.
     """
     # split on the first occurrence of any of these separators
     for sep in (" Featuring ", " With ", " & ", ", "):
@@ -70,28 +89,69 @@ def _clean_artist_name(artist: str) -> str:
     return artist.strip()
 
 
-def _fetch_lyrics(artist: str, title: str) -> str | None:
-    """Query lyrics.ovh for a song's full lyric text. Returns None (never
-    raises) if not found — a 404 here is an expected, common outcome (not
-    every chart entry will be in lyrics.ovh's catalog), not an error.
+def _parse_lrc(lrc_text: str) -> list[dict]:
+    """Parse LRC-format synced lyrics into [{start, end, text}, ...]. Each
+    line's end time is the next line's start time (LRC only gives line
+    start timestamps, not explicit end times); the last line's end is left
+    as its start + a small fixed duration, since there's nothing to bound
+    it against.
     """
-    url = f"{LYRICS_OVH_URL}/{artist}/{title}"
+    lines = []
+    for raw_line in lrc_text.splitlines():
+        match = LRC_LINE_RE.match(raw_line.strip())
+        if not match:
+            continue
+        minutes, seconds, millis, text = match.groups()
+        text = text.strip()
+        if not text:
+            continue
+        start = int(minutes) * 60 + int(seconds) + int((millis or "0").ljust(3, "0")) / 1000
+        lines.append({"start": start, "text": text})
+
+    segments = []
+    for i, line in enumerate(lines):
+        end = lines[i + 1]["start"] if i + 1 < len(lines) else line["start"] + 5.0
+        segments.append({"start": line["start"], "end": end, "text": line["text"]})
+    return segments
+
+
+def _fetch_synced_lyrics(artist: str, title: str) -> list[dict] | None:
+    """Query LRCLIB for a song's line-level synced lyrics. Returns None
+    (never raises) if not found or no synced version exists — common,
+    expected outcomes, not errors.
+
+    Using LRCLIB instead of e.g. running Whisper on the song to get
+    segment timing avoids a circular dependency: we'd otherwise be using
+    the model's own (possibly wrong) output to generate the data used to
+    train that same model. LRCLIB's timestamps are independently
+    human-submitted, with no ASR involved.
+    """
     try:
-        response = requests.get(url, timeout=15)
+        response = requests.get(
+            LRCLIB_API_URL,
+            params={"artist_name": artist, "track_name": title},
+            headers={"User-Agent": "AutoSub v1.0 (dataset builder)"},
+            timeout=15,
+        )
         if response.status_code == 404:
             return None
         response.raise_for_status()
-        lyrics = (response.json().get("lyrics") or "").strip()
-        return lyrics or None
+        data = response.json()
+        synced = data.get("syncedLyrics")
+        if not synced:
+            return None
+        segments = _parse_lrc(synced)
+        return segments or None
     except requests.RequestException as e:
         print(f"Skipping lyrics lookup for {artist!r} - {title!r}: {e}")
         return None
 
 
 def _fetch_billboard_entries(limit: int) -> list[dict]:
-    """Fetch the Billboard chart, look up lyrics for each entry, and keep
-    only entries with real, English lyric text. Returns dicts with
-    song_id, artist, title, lyrics — ready for audio resolution.
+    """Fetch the Billboard chart, look up synced lyrics for each entry, and
+    keep only entries with real, English lyric segments. Returns dicts
+    with song_id, artist, title, lyrics_segments — ready for audio
+    resolution.
     """
     chart = _fetch_billboard_chart()
     entries = []
@@ -104,15 +164,18 @@ def _fetch_billboard_entries(limit: int) -> list[dict]:
             continue
 
         primary_artist = _clean_artist_name(full_artist)
-        lyrics = _fetch_lyrics(primary_artist, title)
-        if not lyrics or not _is_english(lyrics):
+        segments = _fetch_synced_lyrics(primary_artist, title)
+        if not segments:
+            continue
+        full_text = " ".join(s["text"] for s in segments)
+        if not _is_english(full_text):
             continue
 
         entries.append({
             "song_id": f"billboard_{item.get('this_week', len(entries))}_{primary_artist}_{title}",
             "artist": primary_artist,
             "title": title,
-            "lyrics": lyrics,
+            "lyrics_segments": segments,
         })
     return entries
 
@@ -243,8 +306,16 @@ def _download_jamendo_audio(track: dict, output_dir: Path) -> Path:
 # --- DALI source (best-effort; audio depends on YouTube links) ---
 
 def _load_dali_annotations(dali_data_dir: Path, limit: int) -> list[dict]:
-    """Load DALI's .gz annotation files, extracting song_id, artist, lyrics
-    text, and the YouTube URL for each entry."""
+    """Load DALI's .gz annotation files, extracting song_id, artist,
+    line-level timed lyrics_segments, and the YouTube URL for each entry.
+
+    NOTE: this schema (info/annotations/lines keys, each line's time as
+    [start, end]) is based on DALI's documented structure but has not been
+    verified against a real DALI .gz file — DALI access requires a
+    separate request (see ARCHITECTURE.md), which hasn't come through yet
+    as of this writing. Treat this as a best-effort scaffold to adjust once
+    a real file is available to inspect.
+    """
     entries = []
     for gz_path in sorted(dali_data_dir.glob("*.gz"))[:limit]:
         with gzip.open(gz_path, "rb") as f:
@@ -252,15 +323,23 @@ def _load_dali_annotations(dali_data_dir: Path, limit: int) -> list[dict]:
 
         info = data.get("info", {})
         annotations = data.get("annotations", {})
-        words = annotations.get("words", {}).get("text", [])
-        lyrics = " ".join(w.strip() for w in words if w.strip())
-        if not lyrics:
+        lines = annotations.get("lines", {})
+        texts = lines.get("text", [])
+        times = lines.get("time", [])
+
+        segments = []
+        for text, time_range in zip(texts, times):
+            text = text.strip()
+            if not text or not time_range or len(time_range) < 2:
+                continue
+            segments.append({"start": float(time_range[0]), "end": float(time_range[1]), "text": text})
+        if not segments:
             continue
 
         entries.append({
             "song_id": f"dali_{gz_path.stem}",
             "artist": info.get("artist", "unknown"),
-            "lyrics": lyrics,
+            "lyrics_segments": segments,
             "youtube_url": f"https://www.youtube.com/watch?v={info.get('id', '')}",
         })
     return entries
@@ -306,13 +385,19 @@ def build_manifest(
     max_jamendo_tracks_scanned: int = 1000,
 ) -> Path:
     """Build a fine-tuning dataset manifest, primarily from the current
-    Billboard Hot 100 (song/artist via a public chart mirror, lyrics via
-    lyrics.ovh, audio via YouTube search). Optionally tops up with Jamendo
-    and/or DALI if the primary source doesn't reach num_songs.
+    Billboard Hot 100 (song/artist via a public chart mirror, line-level
+    timed lyrics via LRCLIB, audio via YouTube search). Optionally tops up
+    with Jamendo and/or DALI if the primary source doesn't reach num_songs.
 
     Writes a JSON manifest: [{song_id, artist, source, audio_path,
-    vocals_path, lyrics_text, split}, ...]. Splits by artist into
+    vocals_path, lyrics_segments, split}, ...], where lyrics_segments is a
+    list of {start, end, text} line-level segments. Splits by artist into
     train/eval (never splits one artist's songs across both).
+
+    Note: Jamendo's lyrics field is an unsegmented blob (no line timing
+    available from that API), so Jamendo-sourced records get a single
+    segment spanning the whole track — a real limitation versus the
+    Billboard/LRCLIB and DALI paths, which have genuine line-level timing.
     """
     records = []
 
@@ -330,7 +415,7 @@ def build_manifest(
             "source": "billboard",
             "audio_path": str(audio_path),
             "vocals_path": str(vocals_path),
-            "lyrics_text": entry["lyrics"],
+            "lyrics_segments": entry["lyrics_segments"],
         })
 
     print(f"Billboard: found {len(records)}/{num_songs} usable tracks.")
@@ -356,7 +441,9 @@ def build_manifest(
                     "source": "jamendo",
                     "audio_path": str(audio_path),
                     "vocals_path": str(vocals_path),
-                    "lyrics_text": track["lyrics"],
+                    # Jamendo has no line-level timing — one segment for
+                    # the whole track is the best available here.
+                    "lyrics_segments": [{"start": 0.0, "end": track.get("duration", 30.0), "text": track["lyrics"]}],
                 })
 
         if scanned:
@@ -380,7 +467,7 @@ def build_manifest(
                 "source": "dali",
                 "audio_path": str(audio_path),
                 "vocals_path": str(vocals_path),
-                "lyrics_text": entry["lyrics"],
+                "lyrics_segments": entry["lyrics_segments"],
             })
 
     records = _split_by_artist(records)

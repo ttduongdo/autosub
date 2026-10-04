@@ -18,8 +18,9 @@ import requests
 from finetune.dataset import (
     _clean_artist_name,
     _download_dali_audio,
-    _fetch_lyrics,
+    _fetch_synced_lyrics,
     _filter_usable_jamendo_tracks,
+    _parse_lrc,
     _split_by_artist,
     build_manifest,
 )
@@ -95,40 +96,84 @@ def test_clean_artist_name(raw, expected):
     assert _clean_artist_name(raw) == expected
 
 
-# --- _fetch_lyrics (mocked requests) ---
+# --- _parse_lrc ---
 
-def test_fetch_lyrics_returns_text_on_success():
+def test_parse_lrc_extracts_timed_segments():
+    lrc_text = (
+        "[00:10.30]i can't tell you why\n"
+        "[00:13.33]but something inside\n"
+        "[00:16.25]is dancing with fire\n"
+    )
+    segments = _parse_lrc(lrc_text)
+
+    assert len(segments) == 3
+    assert segments[0] == {"start": 10.30, "end": 13.33, "text": "i can't tell you why"}
+    assert segments[1] == {"start": 13.33, "end": 16.25, "text": "but something inside"}
+    # last line has no following line to bound it, so gets a fixed +5s end
+    assert segments[2]["start"] == 16.25
+    assert segments[2]["end"] == 21.25
+
+
+def test_parse_lrc_skips_blank_lines_and_metadata():
+    lrc_text = (
+        "[ar:Some Artist]\n"
+        "[00:10.00]real line\n"
+        "[00:12.00]   \n"  # blank text after timestamp
+        "not a timestamp line at all\n"
+    )
+    segments = _parse_lrc(lrc_text)
+    assert len(segments) == 1
+    assert segments[0]["text"] == "real line"
+
+
+def test_parse_lrc_handles_timestamps_without_milliseconds():
+    lrc_text = "[00:10]no millis here\n[00:15]next line\n"
+    segments = _parse_lrc(lrc_text)
+    assert segments[0]["start"] == 10.0
+    assert segments[0]["end"] == 15.0
+
+
+def test_parse_lrc_returns_empty_for_no_valid_lines():
+    assert _parse_lrc("just plain text, no timestamps") == []
+
+
+# --- _fetch_synced_lyrics (mocked requests) ---
+
+def test_fetch_synced_lyrics_returns_segments_on_success():
     mock_response = type("Resp", (), {
         "status_code": 200,
         "raise_for_status": lambda self: None,
-        "json": lambda self: {"lyrics": "  some real lyrics here  "},
+        "json": lambda self: {"syncedLyrics": "[00:10.00]hello\n[00:12.00]world\n"},
     })()
     with patch("finetune.dataset.requests.get", return_value=mock_response):
-        result = _fetch_lyrics("Some Artist", "Some Title")
-    assert result == "some real lyrics here"
+        result = _fetch_synced_lyrics("Some Artist", "Some Title")
+    assert result == [
+        {"start": 10.0, "end": 12.0, "text": "hello"},
+        {"start": 12.0, "end": 17.0, "text": "world"},
+    ]
 
 
-def test_fetch_lyrics_returns_none_on_404():
+def test_fetch_synced_lyrics_returns_none_on_404():
     mock_response = type("Resp", (), {"status_code": 404})()
     with patch("finetune.dataset.requests.get", return_value=mock_response):
-        result = _fetch_lyrics("Unknown Artist", "Unknown Title")
+        result = _fetch_synced_lyrics("Unknown Artist", "Unknown Title")
     assert result is None
 
 
-def test_fetch_lyrics_returns_none_on_request_exception():
+def test_fetch_synced_lyrics_returns_none_on_request_exception():
     with patch("finetune.dataset.requests.get", side_effect=requests.RequestException("timeout")):
-        result = _fetch_lyrics("Some Artist", "Some Title")
+        result = _fetch_synced_lyrics("Some Artist", "Some Title")
     assert result is None
 
 
-def test_fetch_lyrics_returns_none_on_empty_lyrics_field():
+def test_fetch_synced_lyrics_returns_none_when_no_synced_version_exists():
     mock_response = type("Resp", (), {
         "status_code": 200,
         "raise_for_status": lambda self: None,
-        "json": lambda self: {"lyrics": "   "},
+        "json": lambda self: {"plainLyrics": "some text", "syncedLyrics": None},
     })()
     with patch("finetune.dataset.requests.get", return_value=mock_response):
-        result = _fetch_lyrics("Some Artist", "Some Title")
+        result = _fetch_synced_lyrics("Some Artist", "Some Title")
     assert result is None
 
 
@@ -197,7 +242,7 @@ def test_download_dali_audio_returns_none_on_failure():
     assert result is None
 
 
-# --- Live integration test (real Billboard chart + lyrics.ovh + YouTube + Demucs) ---
+# --- Live integration test (real Billboard chart + LRCLIB + YouTube + Demucs) ---
 
 @pytest.mark.dataset
 def test_build_manifest_against_live_billboard_source(tmp_path):
@@ -215,10 +260,14 @@ def test_build_manifest_against_live_billboard_source(tmp_path):
     for record in records:
         assert set(record.keys()) == {
             "song_id", "artist", "source", "audio_path", "vocals_path",
-            "lyrics_text", "split",
+            "lyrics_segments", "split",
         }
         assert record["source"] == "billboard"
         assert record["split"] in ("train", "eval")
         assert Path(record["audio_path"]).exists()
         assert Path(record["vocals_path"]).exists()
-        assert record["lyrics_text"].strip() != ""
+        assert len(record["lyrics_segments"]) > 0
+        for segment in record["lyrics_segments"]:
+            assert set(segment.keys()) == {"start", "end", "text"}
+            assert segment["end"] >= segment["start"]
+            assert segment["text"].strip() != ""
