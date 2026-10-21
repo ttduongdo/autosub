@@ -36,11 +36,25 @@ from transformers import (
 
 SAMPLE_RATE = 16000
 CHUNK_DURATION = 30.0  # seconds — matches Whisper's native input window
+REPO_ROOT = Path(__file__).parents[1]
+
+
+def _resolve_record_paths(record: dict) -> dict:
+    """finetune/dataset.py stores audio_path/vocals_path relative to the
+    repo root (not absolute), so manifests built on one machine still
+    resolve correctly after cloning the repo elsewhere (e.g. a Colab/cloud
+    GPU box). Resolve them to absolute paths here, at load time.
+    """
+    record = dict(record)
+    for key in ("audio_path", "vocals_path"):
+        if key in record:
+            record[key] = str(REPO_ROOT / record[key])
+    return record
 
 
 def load_manifest(manifest_path: Path) -> tuple[list[dict], list[dict]]:
     """Load the dataset manifest, return (train_records, eval_records)."""
-    records = json.loads(manifest_path.read_text())
+    records = [_resolve_record_paths(r) for r in json.loads(manifest_path.read_text())]
     train_records = [r for r in records if r["split"] == "train"]
     eval_records = [r for r in records if r["split"] == "eval"]
     return train_records, eval_records

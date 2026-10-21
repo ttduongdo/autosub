@@ -18,7 +18,7 @@ import torchaudio
 from peft import PeftModel
 from transformers import WhisperForConditionalGeneration, WhisperProcessor
 
-from finetune.train import CHUNK_DURATION, SAMPLE_RATE, _group_into_chunks
+from finetune.train import CHUNK_DURATION, SAMPLE_RATE, _group_into_chunks, _resolve_record_paths
 
 BASELINE_MODEL_ID = "openai/whisper-base"
 
@@ -40,7 +40,7 @@ _WER_NORMALIZATION = jiwer.Compose([
 
 def load_eval_records(manifest_path: Path) -> list[dict]:
     """Load just the eval-split records from a dataset manifest."""
-    records = json.loads(manifest_path.read_text())
+    records = [_resolve_record_paths(r) for r in json.loads(manifest_path.read_text())]
     return [r for r in records if r["split"] == "eval"]
 
 

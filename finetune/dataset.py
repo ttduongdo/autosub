@@ -58,8 +58,19 @@ LRCLIB_API_URL = "https://lrclib.net/api/get"
 JAMENDO_CLIENT_ID = os.environ.get("JAMENDO_CLIENT_ID", "")
 JAMENDO_API_URL = "https://api.jamendo.com/v3.0/tracks"
 
-RAW_DIR = Path(__file__).parents[1] / "data" / "raw" / "finetune"
+REPO_ROOT = Path(__file__).parents[1]
+RAW_DIR = REPO_ROOT / "data" / "raw" / "finetune"
 RAW_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def _relative_to_repo_root(path: Path) -> str:
+    """Stringify a path relative to the repo root, not absolute — so
+    manifests built on one machine (e.g. a laptop) still resolve correctly
+    when the repo is cloned somewhere else (e.g. a Colab/cloud GPU box).
+    finetune/train.py and finetune/evaluate.py resolve these back to
+    absolute paths at load time via the same REPO_ROOT.
+    """
+    return str(Path(path).resolve().relative_to(REPO_ROOT))
 
 
 # --- Billboard + LRCLIB source (primary) ---
@@ -413,8 +424,8 @@ def build_manifest(
             "song_id": entry["song_id"],
             "artist": entry["artist"],
             "source": "billboard",
-            "audio_path": str(audio_path),
-            "vocals_path": str(vocals_path),
+            "audio_path": _relative_to_repo_root(audio_path),
+            "vocals_path": _relative_to_repo_root(vocals_path),
             "lyrics_segments": entry["lyrics_segments"],
         })
 
@@ -439,8 +450,8 @@ def build_manifest(
                     "song_id": f"jamendo_{track['id']}",
                     "artist": track.get("artist_name", "unknown"),
                     "source": "jamendo",
-                    "audio_path": str(audio_path),
-                    "vocals_path": str(vocals_path),
+                    "audio_path": _relative_to_repo_root(audio_path),
+                    "vocals_path": _relative_to_repo_root(vocals_path),
                     # Jamendo has no line-level timing — one segment for
                     # the whole track is the best available here.
                     "lyrics_segments": [{"start": 0.0, "end": track.get("duration", 30.0), "text": track["lyrics"]}],
@@ -465,8 +476,8 @@ def build_manifest(
                 "song_id": entry["song_id"],
                 "artist": entry["artist"],
                 "source": "dali",
-                "audio_path": str(audio_path),
-                "vocals_path": str(vocals_path),
+                "audio_path": _relative_to_repo_root(audio_path),
+                "vocals_path": _relative_to_repo_root(vocals_path),
                 "lyrics_segments": entry["lyrics_segments"],
             })
 

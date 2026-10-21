@@ -3,8 +3,8 @@
     "song_id": "billboard_2_Stella Lefty_Boston",
     "artist": "Stella Lefty",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/Xh0GyxWgKPs.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/Xh0GyxWgKPs/vocals.wav",
+    "audio_path": "data/raw/Xh0GyxWgKPs.wav",
+    "vocals_path": "data/processed/htdemucs/Xh0GyxWgKPs/vocals.wav",
     "lyrics_segments": [
       {
         "start": 0.35,
@@ -173,8 +173,8 @@
     "song_id": "billboard_3_Morgan Wallen_Been By Now",
     "artist": "Morgan Wallen",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/IpEoDLVEqVw.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/IpEoDLVEqVw/vocals.wav",
+    "audio_path": "data/raw/IpEoDLVEqVw.wav",
+    "vocals_path": "data/processed/htdemucs/IpEoDLVEqVw/vocals.wav",
     "lyrics_segments": [
       {
         "start": 7.66,
@@ -388,8 +388,8 @@
     "song_id": "billboard_4_Ariana Grande_Hate That I Made You Love Me",
     "artist": "Ariana Grande",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/82-jTNka3uc.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/82-jTNka3uc/vocals.wav",
+    "audio_path": "data/raw/82-jTNka3uc.wav",
+    "vocals_path": "data/processed/htdemucs/82-jTNka3uc/vocals.wav",
     "lyrics_segments": [
       {
         "start": 10.3,
@@ -663,8 +663,8 @@
     "song_id": "billboard_5_Tame Impala_Dracula",
     "artist": "Tame Impala",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/oRErBesuMwM.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/oRErBesuMwM/vocals.wav",
+    "audio_path": "data/raw/oRErBesuMwM.wav",
+    "vocals_path": "data/processed/htdemucs/oRErBesuMwM/vocals.wav",
     "lyrics_segments": [
       {
         "start": 0.16,
@@ -893,8 +893,8 @@
     "song_id": "billboard_7_Olivia Dean_So Easy (To Fall In Love)",
     "artist": "Olivia Dean",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/3sur4BmjQt8.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/3sur4BmjQt8/vocals.wav",
+    "audio_path": "data/raw/3sur4BmjQt8.wav",
+    "vocals_path": "data/processed/htdemucs/3sur4BmjQt8/vocals.wav",
     "lyrics_segments": [
       {
         "start": 5.65,
@@ -1068,8 +1068,8 @@
     "song_id": "billboard_8_Olivia Dean_Man I Need",
     "artist": "Olivia Dean",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/oIv_Y2RPQ_A.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/oIv_Y2RPQ_A/vocals.wav",
+    "audio_path": "data/raw/oIv_Y2RPQ_A.wav",
+    "vocals_path": "data/processed/htdemucs/oIv_Y2RPQ_A/vocals.wav",
     "lyrics_segments": [
       {
         "start": 0.58,
@@ -1358,8 +1358,8 @@
     "song_id": "billboard_10_Ella Langley_Be Her",
     "artist": "Ella Langley",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/Dg47eNL_Usw.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/Dg47eNL_Usw/vocals.wav",
+    "audio_path": "data/raw/Dg47eNL_Usw.wav",
+    "vocals_path": "data/processed/htdemucs/Dg47eNL_Usw/vocals.wav",
     "lyrics_segments": [
       {
         "start": 12.07,
@@ -1528,8 +1528,8 @@
     "song_id": "billboard_11_ADELA_Nicole Kidman",
     "artist": "ADELA",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/3sB4Iv_tM7U.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/3sB4Iv_tM7U/vocals.wav",
+    "audio_path": "data/raw/3sB4Iv_tM7U.wav",
+    "vocals_path": "data/processed/htdemucs/3sB4Iv_tM7U/vocals.wav",
     "lyrics_segments": [
       {
         "start": 0.05,
@@ -1813,8 +1813,8 @@
     "song_id": "billboard_13_Olivia Rodrigo_Stupid Song",
     "artist": "Olivia Rodrigo",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/yZo50fZaGaQ.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/yZo50fZaGaQ/vocals.wav",
+    "audio_path": "data/raw/yZo50fZaGaQ.wav",
+    "vocals_path": "data/processed/htdemucs/yZo50fZaGaQ/vocals.wav",
     "lyrics_segments": [
       {
         "start": 7.3,
@@ -2073,8 +2073,8 @@
     "song_id": "billboard_14_Bruno Mars_I Just Might",
     "artist": "Bruno Mars",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/mrV8kK5t0V8.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/mrV8kK5t0V8/vocals.wav",
+    "audio_path": "data/raw/mrV8kK5t0V8.wav",
+    "vocals_path": "data/processed/htdemucs/mrV8kK5t0V8/vocals.wav",
     "lyrics_segments": [
       {
         "start": 0.17,
@@ -2368,8 +2368,8 @@
     "song_id": "billboard_15_Bruno Mars_Risk It All",
     "artist": "Bruno Mars",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/lY5V4hSLWY8.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/lY5V4hSLWY8/vocals.wav",
+    "audio_path": "data/raw/lY5V4hSLWY8.wav",
+    "vocals_path": "data/processed/htdemucs/lY5V4hSLWY8/vocals.wav",
     "lyrics_segments": [
       {
         "start": 22.12,
@@ -2553,8 +2553,8 @@
     "song_id": "billboard_16_Zara Larsson_Midnight Sun",
     "artist": "Zara Larsson",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/uvY8fdgezLQ.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/uvY8fdgezLQ/vocals.wav",
+    "audio_path": "data/raw/uvY8fdgezLQ.wav",
+    "vocals_path": "data/processed/htdemucs/uvY8fdgezLQ/vocals.wav",
     "lyrics_segments": [
       {
         "start": 13.31,
@@ -2738,8 +2738,8 @@
     "song_id": "billboard_17_Ella Langley_I Can't Love You Anymore",
     "artist": "Ella Langley",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/A3G_7XgK2B4.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/A3G_7XgK2B4/vocals.wav",
+    "audio_path": "data/raw/A3G_7XgK2B4.wav",
+    "vocals_path": "data/processed/htdemucs/A3G_7XgK2B4/vocals.wav",
     "lyrics_segments": [
       {
         "start": 16.23,
@@ -3058,8 +3058,8 @@
     "song_id": "billboard_18_Dominic Fike_Babydoll",
     "artist": "Dominic Fike",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/KqMOKCRgvD8.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/KqMOKCRgvD8/vocals.wav",
+    "audio_path": "data/raw/KqMOKCRgvD8.wav",
+    "vocals_path": "data/processed/htdemucs/KqMOKCRgvD8/vocals.wav",
     "lyrics_segments": [
       {
         "start": 10.28,
@@ -3183,8 +3183,8 @@
     "song_id": "billboard_20_Malcolm Todd_Earrings",
     "artist": "Malcolm Todd",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/S02J3QifNog.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/S02J3QifNog/vocals.wav",
+    "audio_path": "data/raw/S02J3QifNog.wav",
+    "vocals_path": "data/processed/htdemucs/S02J3QifNog/vocals.wav",
     "lyrics_segments": [
       {
         "start": 1.03,
@@ -3388,8 +3388,8 @@
     "song_id": "billboard_21_Olivia Rodrigo_Drop Dead",
     "artist": "Olivia Rodrigo",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/78wrful9cVU.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/78wrful9cVU/vocals.wav",
+    "audio_path": "data/raw/78wrful9cVU.wav",
+    "vocals_path": "data/processed/htdemucs/78wrful9cVU/vocals.wav",
     "lyrics_segments": [
       {
         "start": 15.93,
@@ -3688,8 +3688,8 @@
     "song_id": "billboard_22_Luke Combs_Be By You",
     "artist": "Luke Combs",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/x10Eo-yoLTA.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/x10Eo-yoLTA/vocals.wav",
+    "audio_path": "data/raw/x10Eo-yoLTA.wav",
+    "vocals_path": "data/processed/htdemucs/x10Eo-yoLTA/vocals.wav",
     "lyrics_segments": [
       {
         "start": 11.22,
@@ -3868,8 +3868,8 @@
     "song_id": "billboard_24_Ella Langley_Loving Life Again",
     "artist": "Ella Langley",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/QemG9NDH2zI.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/QemG9NDH2zI/vocals.wav",
+    "audio_path": "data/raw/QemG9NDH2zI.wav",
+    "vocals_path": "data/processed/htdemucs/QemG9NDH2zI/vocals.wav",
     "lyrics_segments": [
       {
         "start": 17.05,
@@ -4028,8 +4028,8 @@
     "song_id": "billboard_25_Koe Wetzel_Jaded",
     "artist": "Koe Wetzel",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/X9MDdMhcZVU.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/X9MDdMhcZVU/vocals.wav",
+    "audio_path": "data/raw/X9MDdMhcZVU.wav",
+    "vocals_path": "data/processed/htdemucs/X9MDdMhcZVU/vocals.wav",
     "lyrics_segments": [
       {
         "start": 10.64,
@@ -4253,8 +4253,8 @@
     "song_id": "billboard_26_Tame Impala_Loser",
     "artist": "Tame Impala",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/s3a4OQR-10M.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/s3a4OQR-10M/vocals.wav",
+    "audio_path": "data/raw/s3a4OQR-10M.wav",
+    "vocals_path": "data/processed/htdemucs/s3a4OQR-10M/vocals.wav",
     "lyrics_segments": [
       {
         "start": 12.56,
@@ -4413,8 +4413,8 @@
     "song_id": "billboard_27_ADELA_Ain't In LA",
     "artist": "ADELA",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/0ijm2Xui5N8.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/0ijm2Xui5N8/vocals.wav",
+    "audio_path": "data/raw/0ijm2Xui5N8.wav",
+    "vocals_path": "data/processed/htdemucs/0ijm2Xui5N8/vocals.wav",
     "lyrics_segments": [
       {
         "start": 2.27,
@@ -4643,8 +4643,8 @@
     "song_id": "billboard_29_Tems_What You Need",
     "artist": "Tems",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/A__GXZsG3hk.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/A__GXZsG3hk/vocals.wav",
+    "audio_path": "data/raw/A__GXZsG3hk.wav",
+    "vocals_path": "data/processed/htdemucs/A__GXZsG3hk/vocals.wav",
     "lyrics_segments": [
       {
         "start": 4.6,
@@ -4903,8 +4903,8 @@
     "song_id": "billboard_30_KATSEYE_Animal",
     "artist": "KATSEYE",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/m7k9UMcHbr0.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/m7k9UMcHbr0/vocals.wav",
+    "audio_path": "data/raw/m7k9UMcHbr0.wav",
+    "vocals_path": "data/processed/htdemucs/m7k9UMcHbr0/vocals.wav",
     "lyrics_segments": [
       {
         "start": 0.01,
@@ -5158,8 +5158,8 @@
     "song_id": "billboard_31_Riley Green_Think As You Drunk",
     "artist": "Riley Green",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/5SCJM6aYsK0.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/5SCJM6aYsK0/vocals.wav",
+    "audio_path": "data/raw/5SCJM6aYsK0.wav",
+    "vocals_path": "data/processed/htdemucs/5SCJM6aYsK0/vocals.wav",
     "lyrics_segments": [
       {
         "start": 5.52,
@@ -5383,8 +5383,8 @@
     "song_id": "billboard_32_Steve Lacy_Oh Yeah?",
     "artist": "Steve Lacy",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/yGHEis32s2Y.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/yGHEis32s2Y/vocals.wav",
+    "audio_path": "data/raw/yGHEis32s2Y.wav",
+    "vocals_path": "data/processed/htdemucs/yGHEis32s2Y/vocals.wav",
     "lyrics_segments": [
       {
         "start": 11.52,
@@ -5518,8 +5518,8 @@
     "song_id": "billboard_33_Teddy Swims_Mr. Know It All",
     "artist": "Teddy Swims",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/KllnaNOxe0I.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/KllnaNOxe0I/vocals.wav",
+    "audio_path": "data/raw/KllnaNOxe0I.wav",
+    "vocals_path": "data/processed/htdemucs/KllnaNOxe0I/vocals.wav",
     "lyrics_segments": [
       {
         "start": 16.5,
@@ -5743,8 +5743,8 @@
     "song_id": "billboard_34_Noah Kahan_Orbiter",
     "artist": "Noah Kahan",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/OFcKm-5jSQE.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/OFcKm-5jSQE/vocals.wav",
+    "audio_path": "data/raw/OFcKm-5jSQE.wav",
+    "vocals_path": "data/processed/htdemucs/OFcKm-5jSQE/vocals.wav",
     "lyrics_segments": [
       {
         "start": 13.8,
@@ -6038,8 +6038,8 @@
     "song_id": "billboard_35_Mac Miller_Cinderella",
     "artist": "Mac Miller",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/0fcsGS1dEro.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/0fcsGS1dEro/vocals.wav",
+    "audio_path": "data/raw/0fcsGS1dEro.wav",
+    "vocals_path": "data/processed/htdemucs/0fcsGS1dEro/vocals.wav",
     "lyrics_segments": [
       {
         "start": 1.62,
@@ -6603,8 +6603,8 @@
     "song_id": "billboard_36_Cody Johnson_Take Me Back (Leave Me There)",
     "artist": "Cody Johnson",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/Q0yHma6LkMs.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/Q0yHma6LkMs/vocals.wav",
+    "audio_path": "data/raw/Q0yHma6LkMs.wav",
+    "vocals_path": "data/processed/htdemucs/Q0yHma6LkMs/vocals.wav",
     "lyrics_segments": [
       {
         "start": 12.47,
@@ -6803,8 +6803,8 @@
     "song_id": "billboard_39_sombr_My Body Isn't Ready",
     "artist": "sombr",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/ofywN3NgGqY.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/ofywN3NgGqY/vocals.wav",
+    "audio_path": "data/raw/ofywN3NgGqY.wav",
+    "vocals_path": "data/processed/htdemucs/ofywN3NgGqY/vocals.wav",
     "lyrics_segments": [
       {
         "start": 0.06,
@@ -6993,8 +6993,8 @@
     "song_id": "billboard_40_Cardi B_AH HA",
     "artist": "Cardi B",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/I-5e_J3LWS8.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/I-5e_J3LWS8/vocals.wav",
+    "audio_path": "data/raw/I-5e_J3LWS8.wav",
+    "vocals_path": "data/processed/htdemucs/I-5e_J3LWS8/vocals.wav",
     "lyrics_segments": [
       {
         "start": 1.27,
@@ -7348,8 +7348,8 @@
     "song_id": "billboard_41_Temper City_Self Aware",
     "artist": "Temper City",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/mh4AQkw4Jjc.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/mh4AQkw4Jjc/vocals.wav",
+    "audio_path": "data/raw/mh4AQkw4Jjc.wav",
+    "vocals_path": "data/processed/htdemucs/mh4AQkw4Jjc/vocals.wav",
     "lyrics_segments": [
       {
         "start": 8.01,
@@ -7618,8 +7618,8 @@
     "song_id": "billboard_42_Zara Larsson_Lush Life",
     "artist": "Zara Larsson",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/tD4HCZe-tew.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/tD4HCZe-tew/vocals.wav",
+    "audio_path": "data/raw/tD4HCZe-tew.wav",
+    "vocals_path": "data/processed/htdemucs/tD4HCZe-tew/vocals.wav",
     "lyrics_segments": [
       {
         "start": 8.91,
@@ -7948,8 +7948,8 @@
     "song_id": "billboard_43_Yung Miami_Spend Dat",
     "artist": "Yung Miami",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/NSZ26l3DIKE.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/NSZ26l3DIKE/vocals.wav",
+    "audio_path": "data/raw/NSZ26l3DIKE.wav",
+    "vocals_path": "data/processed/htdemucs/NSZ26l3DIKE/vocals.wav",
     "lyrics_segments": [
       {
         "start": 2.25,
@@ -8273,8 +8273,8 @@
     "song_id": "billboard_44_Jhene Aiko_So Good",
     "artist": "Jhene Aiko",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/QArBw68H-_Q.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/QArBw68H-_Q/vocals.wav",
+    "audio_path": "data/raw/QArBw68H-_Q.wav",
+    "vocals_path": "data/processed/htdemucs/QArBw68H-_Q/vocals.wav",
     "lyrics_segments": [
       {
         "start": 10.64,
@@ -8678,8 +8678,8 @@
     "song_id": "billboard_45_Earth_September",
     "artist": "Earth",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/Gs069dndIYk.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/Gs069dndIYk/vocals.wav",
+    "audio_path": "data/raw/Gs069dndIYk.wav",
+    "vocals_path": "data/processed/htdemucs/Gs069dndIYk/vocals.wav",
     "lyrics_segments": [
       {
         "start": 19.0,
@@ -8858,8 +8858,8 @@
     "song_id": "billboard_46_Drake_Shabang",
     "artist": "Drake",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/MoR47PedfaU.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/MoR47PedfaU/vocals.wav",
+    "audio_path": "data/raw/MoR47PedfaU.wav",
+    "vocals_path": "data/processed/htdemucs/MoR47PedfaU/vocals.wav",
     "lyrics_segments": [
       {
         "start": 4.15,
@@ -9183,8 +9183,8 @@
     "song_id": "billboard_47_Beyonce_Morning Dew (Donk)",
     "artist": "Beyonce",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/Mv5f9Q2LJYM.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/Mv5f9Q2LJYM/vocals.wav",
+    "audio_path": "data/raw/Mv5f9Q2LJYM.wav",
+    "vocals_path": "data/processed/htdemucs/Mv5f9Q2LJYM/vocals.wav",
     "lyrics_segments": [
       {
         "start": 11.47,
@@ -9503,8 +9503,8 @@
     "song_id": "billboard_48_Alyssa Grace_Bloodstream",
     "artist": "Alyssa Grace",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/FOJ4A4wixDg.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/FOJ4A4wixDg/vocals.wav",
+    "audio_path": "data/raw/FOJ4A4wixDg.wav",
+    "vocals_path": "data/processed/htdemucs/FOJ4A4wixDg/vocals.wav",
     "lyrics_segments": [
       {
         "start": 10.55,
@@ -9683,8 +9683,8 @@
     "song_id": "billboard_49_Ariana Grande_Petal",
     "artist": "Ariana Grande",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/afSgBNwmZrQ.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/afSgBNwmZrQ/vocals.wav",
+    "audio_path": "data/raw/afSgBNwmZrQ.wav",
+    "vocals_path": "data/processed/htdemucs/afSgBNwmZrQ/vocals.wav",
     "lyrics_segments": [
       {
         "start": 7.51,
@@ -9953,8 +9953,8 @@
     "song_id": "billboard_51_Kenny Chesney_Carry On",
     "artist": "Kenny Chesney",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/3im-HOZNMIM.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/3im-HOZNMIM/vocals.wav",
+    "audio_path": "data/raw/3im-HOZNMIM.wav",
+    "vocals_path": "data/processed/htdemucs/3im-HOZNMIM/vocals.wav",
     "lyrics_segments": [
       {
         "start": 14.86,
@@ -10153,8 +10153,8 @@
     "song_id": "billboard_52_Miley_Bass Persuades",
     "artist": "Miley",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/aWpw-Ynl0Yc.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/aWpw-Ynl0Yc/vocals.wav",
+    "audio_path": "data/raw/aWpw-Ynl0Yc.wav",
+    "vocals_path": "data/processed/htdemucs/aWpw-Ynl0Yc/vocals.wav",
     "lyrics_segments": [
       {
         "start": 0.26,
@@ -10398,8 +10398,8 @@
     "song_id": "billboard_53_Belly Gang Kushington_WTF GOIN",
     "artist": "Belly Gang Kushington",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/xxFjwI1qYmc.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/xxFjwI1qYmc/vocals.wav",
+    "audio_path": "data/raw/xxFjwI1qYmc.wav",
+    "vocals_path": "data/processed/htdemucs/xxFjwI1qYmc/vocals.wav",
     "lyrics_segments": [
       {
         "start": 2.12,
@@ -10718,8 +10718,8 @@
     "song_id": "billboard_54_Lainey Wilson_Phone, Keys, Wallet",
     "artist": "Lainey Wilson",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/yUkTWIBR1qg.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/yUkTWIBR1qg/vocals.wav",
+    "audio_path": "data/raw/yUkTWIBR1qg.wav",
+    "vocals_path": "data/processed/htdemucs/yUkTWIBR1qg/vocals.wav",
     "lyrics_segments": [
       {
         "start": 12.88,
@@ -10873,8 +10873,8 @@
     "song_id": "billboard_57_Stella Lefty_Something To Lose",
     "artist": "Stella Lefty",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/HUOeUG3daIY.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/HUOeUG3daIY/vocals.wav",
+    "audio_path": "data/raw/HUOeUG3daIY.wav",
+    "vocals_path": "data/processed/htdemucs/HUOeUG3daIY/vocals.wav",
     "lyrics_segments": [
       {
         "start": 13.5,
@@ -11083,8 +11083,8 @@
     "song_id": "billboard_58_Sienna Spiro_Great Expectation",
     "artist": "Sienna Spiro",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/d2-dpM0crY0.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/d2-dpM0crY0/vocals.wav",
+    "audio_path": "data/raw/d2-dpM0crY0.wav",
+    "vocals_path": "data/processed/htdemucs/d2-dpM0crY0/vocals.wav",
     "lyrics_segments": [
       {
         "start": 13.81,
@@ -11293,8 +11293,8 @@
     "song_id": "billboard_59_Gracie Abrams_Hit The Wall",
     "artist": "Gracie Abrams",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/jFCTQ68gxoY.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/jFCTQ68gxoY/vocals.wav",
+    "audio_path": "data/raw/jFCTQ68gxoY.wav",
+    "vocals_path": "data/processed/htdemucs/jFCTQ68gxoY/vocals.wav",
     "lyrics_segments": [
       {
         "start": 8.86,
@@ -11523,8 +11523,8 @@
     "song_id": "billboard_60_Riley Green_My Way",
     "artist": "Riley Green",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/O28hygrEhF8.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/O28hygrEhF8/vocals.wav",
+    "audio_path": "data/raw/O28hygrEhF8.wav",
+    "vocals_path": "data/processed/htdemucs/O28hygrEhF8/vocals.wav",
     "lyrics_segments": [
       {
         "start": 14.11,
@@ -11713,8 +11713,8 @@
     "song_id": "billboard_61_John Morgan_Kid Myself",
     "artist": "John Morgan",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/tC3Fnl1SBFs.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/tC3Fnl1SBFs/vocals.wav",
+    "audio_path": "data/raw/tC3Fnl1SBFs.wav",
+    "vocals_path": "data/processed/htdemucs/tC3Fnl1SBFs/vocals.wav",
     "lyrics_segments": [
       {
         "start": 13.88,
@@ -11958,8 +11958,8 @@
     "song_id": "billboard_62_Audrey Hobert_Sue Me",
     "artist": "Audrey Hobert",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/ZqgKKbg2Ja8.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/ZqgKKbg2Ja8/vocals.wav",
+    "audio_path": "data/raw/ZqgKKbg2Ja8.wav",
+    "vocals_path": "data/processed/htdemucs/ZqgKKbg2Ja8/vocals.wav",
     "lyrics_segments": [
       {
         "start": 21.21,
@@ -12308,8 +12308,8 @@
     "song_id": "billboard_63_Shaboozey_Cowgirl",
     "artist": "Shaboozey",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/u0g8elvennQ.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/u0g8elvennQ/vocals.wav",
+    "audio_path": "data/raw/u0g8elvennQ.wav",
+    "vocals_path": "data/processed/htdemucs/u0g8elvennQ/vocals.wav",
     "lyrics_segments": [
       {
         "start": 13.02,
@@ -12568,8 +12568,8 @@
     "song_id": "billboard_64_BabyChiefDoit_Ghetto Love Story",
     "artist": "BabyChiefDoit",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/C-47Vg6Eq5o.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/C-47Vg6Eq5o/vocals.wav",
+    "audio_path": "data/raw/C-47Vg6Eq5o.wav",
+    "vocals_path": "data/processed/htdemucs/C-47Vg6Eq5o/vocals.wav",
     "lyrics_segments": [
       {
         "start": 2.43,
@@ -12773,8 +12773,8 @@
     "song_id": "billboard_65_Riley Green_That's Just Me",
     "artist": "Riley Green",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/3-uy4bQsr_4.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/3-uy4bQsr_4/vocals.wav",
+    "audio_path": "data/raw/3-uy4bQsr_4.wav",
+    "vocals_path": "data/processed/htdemucs/3-uy4bQsr_4/vocals.wav",
     "lyrics_segments": [
       {
         "start": 13.26,
@@ -12993,8 +12993,8 @@
     "song_id": "billboard_66_Corey Kent_Empty Words",
     "artist": "Corey Kent",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/APVXZQ5EOvA.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/APVXZQ5EOvA/vocals.wav",
+    "audio_path": "data/raw/APVXZQ5EOvA.wav",
+    "vocals_path": "data/processed/htdemucs/APVXZQ5EOvA/vocals.wav",
     "lyrics_segments": [
       {
         "start": 13.59,
@@ -13193,8 +13193,8 @@
     "song_id": "billboard_67_Kacey Musgraves_Mexico Honey",
     "artist": "Kacey Musgraves",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/5aXZ0fjAiho.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/5aXZ0fjAiho/vocals.wav",
+    "audio_path": "data/raw/5aXZ0fjAiho.wav",
+    "vocals_path": "data/processed/htdemucs/5aXZ0fjAiho/vocals.wav",
     "lyrics_segments": [
       {
         "start": 0.17,
@@ -13408,8 +13408,8 @@
     "song_id": "billboard_68_comehelpglo_onsra",
     "artist": "comehelpglo",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/9UQGXUlMYFU.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/9UQGXUlMYFU/vocals.wav",
+    "audio_path": "data/raw/9UQGXUlMYFU.wav",
+    "vocals_path": "data/processed/htdemucs/9UQGXUlMYFU/vocals.wav",
     "lyrics_segments": [
       {
         "start": 15.34,
@@ -13633,8 +13633,8 @@
     "song_id": "billboard_70_HARDY_McArthur",
     "artist": "HARDY",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/tW8F8JCn6UQ.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/tW8F8JCn6UQ/vocals.wav",
+    "audio_path": "data/raw/tW8F8JCn6UQ.wav",
+    "vocals_path": "data/processed/htdemucs/tW8F8JCn6UQ/vocals.wav",
     "lyrics_segments": [
       {
         "start": 13.55,
@@ -13803,8 +13803,8 @@
     "song_id": "billboard_71_F3miii_Noble",
     "artist": "F3miii",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/Pz-SZlU4C10.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/Pz-SZlU4C10/vocals.wav",
+    "audio_path": "data/raw/Pz-SZlU4C10.wav",
+    "vocals_path": "data/processed/htdemucs/Pz-SZlU4C10/vocals.wav",
     "lyrics_segments": [
       {
         "start": 13.63,
@@ -14133,8 +14133,8 @@
     "song_id": "billboard_72_Lauren Alaina_All My Exes",
     "artist": "Lauren Alaina",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/OWanu5I64oc.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/OWanu5I64oc/vocals.wav",
+    "audio_path": "data/raw/OWanu5I64oc.wav",
+    "vocals_path": "data/processed/htdemucs/OWanu5I64oc/vocals.wav",
     "lyrics_segments": [
       {
         "start": 13.49,
@@ -14438,8 +14438,8 @@
     "song_id": "billboard_73_Steve Lacy_The Feeling",
     "artist": "Steve Lacy",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/Qw20tg1v7Fc.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/Qw20tg1v7Fc/vocals.wav",
+    "audio_path": "data/raw/Qw20tg1v7Fc.wav",
+    "vocals_path": "data/processed/htdemucs/Qw20tg1v7Fc/vocals.wav",
     "lyrics_segments": [
       {
         "start": 3.5,
@@ -14668,8 +14668,8 @@
     "song_id": "billboard_74_Bailey Zimmerman_Chevy Silverado",
     "artist": "Bailey Zimmerman",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/TMkt8GcHX0g.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/TMkt8GcHX0g/vocals.wav",
+    "audio_path": "data/raw/TMkt8GcHX0g.wav",
+    "vocals_path": "data/processed/htdemucs/TMkt8GcHX0g/vocals.wav",
     "lyrics_segments": [
       {
         "start": 19.45,
@@ -14848,8 +14848,8 @@
     "song_id": "billboard_75_Marshmello_Another Drink",
     "artist": "Marshmello",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/UW1UKhrQphI.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/UW1UKhrQphI/vocals.wav",
+    "audio_path": "data/raw/UW1UKhrQphI.wav",
+    "vocals_path": "data/processed/htdemucs/UW1UKhrQphI/vocals.wav",
     "lyrics_segments": [
       {
         "start": 8.51,
@@ -15033,8 +15033,8 @@
     "song_id": "billboard_76_Luke Bryan_Country And She Knows It",
     "artist": "Luke Bryan",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/zHlzvcv3oyk.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/zHlzvcv3oyk/vocals.wav",
+    "audio_path": "data/raw/zHlzvcv3oyk.wav",
+    "vocals_path": "data/processed/htdemucs/zHlzvcv3oyk/vocals.wav",
     "lyrics_segments": [
       {
         "start": 15.38,
@@ -15268,8 +15268,8 @@
     "song_id": "billboard_78_Mack Geiger_String By",
     "artist": "Mack Geiger",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/iMI6bRH2PeI.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/iMI6bRH2PeI/vocals.wav",
+    "audio_path": "data/raw/iMI6bRH2PeI.wav",
+    "vocals_path": "data/processed/htdemucs/iMI6bRH2PeI/vocals.wav",
     "lyrics_segments": [
       {
         "start": 10.45,
@@ -15473,8 +15473,8 @@
     "song_id": "billboard_79_Hudson Westbrook_Painted You Pretty",
     "artist": "Hudson Westbrook",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/uGZ240yJLiY.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/uGZ240yJLiY/vocals.wav",
+    "audio_path": "data/raw/uGZ240yJLiY.wav",
+    "vocals_path": "data/processed/htdemucs/uGZ240yJLiY/vocals.wav",
     "lyrics_segments": [
       {
         "start": 16.64,
@@ -15683,8 +15683,8 @@
     "song_id": "billboard_80_Zach John King_Get To Drinkin'",
     "artist": "Zach John King",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/QKqVNr4xFPI.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/QKqVNr4xFPI/vocals.wav",
+    "audio_path": "data/raw/QKqVNr4xFPI.wav",
+    "vocals_path": "data/processed/htdemucs/QKqVNr4xFPI/vocals.wav",
     "lyrics_segments": [
       {
         "start": 12.1,
@@ -15953,8 +15953,8 @@
     "song_id": "billboard_81_Olivia Rodrigo_Maggots For Brains",
     "artist": "Olivia Rodrigo",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/lwiQSOaI_XE.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/lwiQSOaI_XE/vocals.wav",
+    "audio_path": "data/raw/lwiQSOaI_XE.wav",
+    "vocals_path": "data/processed/htdemucs/lwiQSOaI_XE/vocals.wav",
     "lyrics_segments": [
       {
         "start": 12.04,
@@ -16273,8 +16273,8 @@
     "song_id": "billboard_82_Falling in Reverse_Joseph",
     "artist": "Falling in Reverse",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/Tk9TM7-eTmw.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/Tk9TM7-eTmw/vocals.wav",
+    "audio_path": "data/raw/Tk9TM7-eTmw.wav",
+    "vocals_path": "data/processed/htdemucs/Tk9TM7-eTmw/vocals.wav",
     "lyrics_segments": [
       {
         "start": 1.78,
@@ -16533,8 +16533,8 @@
     "song_id": "billboard_85_Olivia Rodrigo_Honeybee",
     "artist": "Olivia Rodrigo",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/60rlboK94mE.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/60rlboK94mE/vocals.wav",
+    "audio_path": "data/raw/60rlboK94mE.wav",
+    "vocals_path": "data/processed/htdemucs/60rlboK94mE/vocals.wav",
     "lyrics_segments": [
       {
         "start": 7.48,
@@ -16738,8 +16738,8 @@
     "song_id": "billboard_87_Jelly Roll_Hands Up",
     "artist": "Jelly Roll",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/GDp3q59ZWZE.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/GDp3q59ZWZE/vocals.wav",
+    "audio_path": "data/raw/GDp3q59ZWZE.wav",
+    "vocals_path": "data/processed/htdemucs/GDp3q59ZWZE/vocals.wav",
     "lyrics_segments": [
       {
         "start": 8.85,
@@ -16983,8 +16983,8 @@
     "song_id": "billboard_88_Elevation Worship_God I'm Just Grateful",
     "artist": "Elevation Worship",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/YbGFYaA0SbY.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/YbGFYaA0SbY/vocals.wav",
+    "audio_path": "data/raw/YbGFYaA0SbY.wav",
+    "vocals_path": "data/processed/htdemucs/YbGFYaA0SbY/vocals.wav",
     "lyrics_segments": [
       {
         "start": 8.99,
@@ -17263,8 +17263,8 @@
     "song_id": "billboard_89_Dan + Shay_Say So",
     "artist": "Dan + Shay",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/YuF6eZROXIw.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/YuF6eZROXIw/vocals.wav",
+    "audio_path": "data/raw/YuF6eZROXIw.wav",
+    "vocals_path": "data/processed/htdemucs/YuF6eZROXIw/vocals.wav",
     "lyrics_segments": [
       {
         "start": 14.35,
@@ -17493,8 +17493,8 @@
     "song_id": "billboard_91_Karol G_Still",
     "artist": "Karol G",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/aQXq3ndLkHs.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/aQXq3ndLkHs/vocals.wav",
+    "audio_path": "data/raw/aQXq3ndLkHs.wav",
+    "vocals_path": "data/processed/htdemucs/aQXq3ndLkHs/vocals.wav",
     "lyrics_segments": [
       {
         "start": 3.67,
@@ -17658,8 +17658,8 @@
     "song_id": "billboard_92_Jamie Miller_Babydoll",
     "artist": "Jamie Miller",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/8g25GeJgxgs.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/8g25GeJgxgs/vocals.wav",
+    "audio_path": "data/raw/8g25GeJgxgs.wav",
+    "vocals_path": "data/processed/htdemucs/8g25GeJgxgs/vocals.wav",
     "lyrics_segments": [
       {
         "start": 8.56,
@@ -17918,8 +17918,8 @@
     "song_id": "billboard_93_boa_Duvet",
     "artist": "boa",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/Uoox9fpmDP0.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/Uoox9fpmDP0/vocals.wav",
+    "audio_path": "data/raw/Uoox9fpmDP0.wav",
+    "vocals_path": "data/processed/htdemucs/Uoox9fpmDP0/vocals.wav",
     "lyrics_segments": [
       {
         "start": 0.99,
@@ -18133,8 +18133,8 @@
     "song_id": "billboard_95_Rod Wave_Dope Girl",
     "artist": "Rod Wave",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/5sqNrvKVqxY.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/5sqNrvKVqxY/vocals.wav",
+    "audio_path": "data/raw/5sqNrvKVqxY.wav",
+    "vocals_path": "data/processed/htdemucs/5sqNrvKVqxY/vocals.wav",
     "lyrics_segments": [
       {
         "start": 15.13,
@@ -18263,8 +18263,8 @@
     "song_id": "billboard_96_Jhene Aiko_Ghost",
     "artist": "Jhene Aiko",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/m4t6YeTJFfY.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/m4t6YeTJFfY/vocals.wav",
+    "audio_path": "data/raw/m4t6YeTJFfY.wav",
+    "vocals_path": "data/processed/htdemucs/m4t6YeTJFfY/vocals.wav",
     "lyrics_segments": [
       {
         "start": 13.03,
@@ -18478,8 +18478,8 @@
     "song_id": "billboard_97_Blake Whiten_Bet On That",
     "artist": "Blake Whiten",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/mIWMqXU4tGQ.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/mIWMqXU4tGQ/vocals.wav",
+    "audio_path": "data/raw/mIWMqXU4tGQ.wav",
+    "vocals_path": "data/processed/htdemucs/mIWMqXU4tGQ/vocals.wav",
     "lyrics_segments": [
       {
         "start": 13.64,
@@ -18733,8 +18733,8 @@
     "song_id": "billboard_98_Olivia Rodrigo_Expectations",
     "artist": "Olivia Rodrigo",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/nBv5BzFpvvE.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/nBv5BzFpvvE/vocals.wav",
+    "audio_path": "data/raw/nBv5BzFpvvE.wav",
+    "vocals_path": "data/processed/htdemucs/nBv5BzFpvvE/vocals.wav",
     "lyrics_segments": [
       {
         "start": 30.51,
@@ -19048,8 +19048,8 @@
     "song_id": "billboard_99_Miley Cyrus_Let\u2019s Get Married",
     "artist": "Miley Cyrus",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/qwaVhOZkAek.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/qwaVhOZkAek/vocals.wav",
+    "audio_path": "data/raw/qwaVhOZkAek.wav",
+    "vocals_path": "data/processed/htdemucs/qwaVhOZkAek/vocals.wav",
     "lyrics_segments": [
       {
         "start": 10.78,
@@ -19363,8 +19363,8 @@
     "song_id": "billboard_100_Cameron Whitcomb_Kingdom Of Fear",
     "artist": "Cameron Whitcomb",
     "source": "billboard",
-    "audio_path": "/Users/dothuyduong/Documents/autosub/data/raw/63k0kNuCPak.wav",
-    "vocals_path": "/Users/dothuyduong/Documents/autosub/data/processed/htdemucs/63k0kNuCPak/vocals.wav",
+    "audio_path": "data/raw/63k0kNuCPak.wav",
+    "vocals_path": "data/processed/htdemucs/63k0kNuCPak/vocals.wav",
     "lyrics_segments": [
       {
         "start": 7.18,
