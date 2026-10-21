@@ -4,8 +4,10 @@ __pycache__/
 venv/
 .env
 
-data/*
-!data/.gitkeep
+data/checkpoints/
+data/processed/
+data/raw/
+data/.gitkeep
 
 ARCHITECTURE.md
 PIPELINE.md
