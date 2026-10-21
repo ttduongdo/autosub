@@ -209,6 +209,16 @@ def _build_lora_model(base_model_id: str) -> PeftModel:
     return get_peft_model(model, lora_config)
 
 
+def _build_full_model(base_model_id: str) -> WhisperForConditionalGeneration:
+    """Load the base Whisper model with every weight trainable — no LoRA
+    freezing. Needs much more GPU memory/compute than the LoRA path, but
+    lets the whole model adapt rather than a small adapter on top of it.
+    """
+    model = WhisperForConditionalGeneration.from_pretrained(base_model_id)
+    model.generation_config.forced_decoder_ids = None
+    return model
+
+
 def train(
     manifest_path: Path,
     output_dir: Path,
@@ -218,10 +228,21 @@ def train(
     learning_rate: float = 1e-4,
     max_steps: int = -1,
     resume_from_checkpoint: str | None = None,
+    run_name: str | None = None,
+    report_to_wandb: bool = False,
+    full_finetune: bool = False,
 ) -> Path:
-    """Fine-tune base_model_id with LoRA on the manifest's train split,
-    using the eval split for periodic validation. Saves the LoRA adapter
-    (not the full model) to output_dir. Returns output_dir.
+    """Fine-tune base_model_id on the manifest's train split, using the
+    eval split for periodic validation, and save to output_dir. Returns
+    output_dir.
+
+    By default uses a LoRA adapter (cheap, fast, ~1.6% of params trainable
+    — practical on a laptop/MPS). Set full_finetune=True to train every
+    weight instead, which needs real GPU memory but lets the whole model
+    adapt rather than a small adapter layered on top of it; with
+    full_finetune=True, output_dir holds a complete model checkpoint
+    instead of a PEFT adapter — evaluate.py's _load_finetuned_model
+    detects which kind is on disk and loads accordingly.
 
     max_steps, if set (> 0), overrides num_epochs and stops after that many
     training steps regardless of dataset size — used by the smoke test to
@@ -231,6 +252,10 @@ def train(
     saved checkpoint-N directory (e.g. "data/checkpoints/whisper-lora-v2/checkpoint-72")
     instead of starting over from the base model — skips re-running
     already-completed epochs/steps.
+
+    run_name/report_to_wandb, if set, log the run to Weights & Biases
+    (requires `wandb login` to have been run already) so multiple GPU
+    experiments can be compared side by side.
     """
     train_records, eval_records = load_manifest(manifest_path)
 
@@ -238,7 +263,7 @@ def train(
     train_dataset = _build_hf_dataset(train_records, processor)
     eval_dataset = _build_hf_dataset(eval_records, processor)
 
-    model = _build_lora_model(base_model_id)
+    model = _build_full_model(base_model_id) if full_finetune else _build_lora_model(base_model_id)
     data_collator = _DataCollatorSpeechSeq2SeqWithPadding(processor=processor)
 
     training_args = Seq2SeqTrainingArguments(
@@ -256,6 +281,8 @@ def train(
         label_names=["labels"],
         remove_unused_columns=False,
         logging_steps=1,
+        report_to=["wandb"] if report_to_wandb else [],
+        run_name=run_name,
     )
 
     trainer = Seq2SeqTrainer(

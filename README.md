@@ -41,6 +41,8 @@ The full pipeline and web demo are working end to end. The fine-tuning track has
 
 **Next up:** moving training off a laptop CPU/integrated-GPU setup onto real GPU compute, to make it cheap enough to iterate on epoch count and hyperparameters rather than treating every experiment as a multi-hour, one-shot run.
 
+For context on what a mature version of this approach can achieve: a 2025 MSc thesis on Greek lyrics transcription ([Frangiadaki, Athena Research Center](https://arxiv.org/abs/2609.11302)) fine-tuned Whisper on sung lyrics and took zero-shot WER from 92% down to 30% — using more training epochs and GPU compute than this project has run so far. That gap lines up with the direction this project is already headed.
+
 ## Scope
 
 This is a local, single-user project — no job queue, no database, no deployment. It's meant to demonstrate the full pipeline (classical audio processing + ASR + alignment) and a real, honestly-reported model fine-tuning experiment, not to be a production service.

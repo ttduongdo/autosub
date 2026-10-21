@@ -95,16 +95,32 @@ def _load_baseline_model(model_id: str = BASELINE_MODEL_ID) -> tuple[WhisperForC
     return model, processor
 
 
-def _load_finetuned_model(checkpoint_dir: Path, base_model_id: str = BASELINE_MODEL_ID) -> tuple[PeftModel, WhisperProcessor]:
-    """Load the fine-tuned checkpoint: fresh base model + the saved LoRA
-    adapter on top. The processor is loaded from the checkpoint directory
-    (saved alongside the adapter by finetune.train) rather than re-fetched
-    from the base model id, though for this project they're equivalent.
+def _load_finetuned_model(
+    checkpoint_dir: Path, base_model_id: str = BASELINE_MODEL_ID
+) -> tuple[WhisperForConditionalGeneration | PeftModel, WhisperProcessor]:
+    """Load the fine-tuned checkpoint, handling both of finetune.train's
+    output formats:
+
+    - LoRA (default, full_finetune=False): checkpoint_dir holds only the
+      small adapter (adapter_config.json), so it's loaded on top of a
+      freshly-downloaded copy of the base model.
+    - Full fine-tune (full_finetune=True): checkpoint_dir holds a complete
+      model, loaded directly with no separate base model needed.
+
+    The processor is loaded from the checkpoint directory (saved alongside
+    the model by finetune.train) rather than re-fetched from the base
+    model id, though for this project they're equivalent.
     """
     processor = WhisperProcessor.from_pretrained(checkpoint_dir, task="transcribe")
-    base_model = WhisperForConditionalGeneration.from_pretrained(base_model_id)
-    base_model.generation_config.forced_decoder_ids = None
-    model = PeftModel.from_pretrained(base_model, checkpoint_dir)
+
+    if (Path(checkpoint_dir) / "adapter_config.json").exists():
+        base_model = WhisperForConditionalGeneration.from_pretrained(base_model_id)
+        base_model.generation_config.forced_decoder_ids = None
+        model = PeftModel.from_pretrained(base_model, checkpoint_dir)
+    else:
+        model = WhisperForConditionalGeneration.from_pretrained(checkpoint_dir)
+        model.generation_config.forced_decoder_ids = None
+
     model.eval()
     return model, processor
 

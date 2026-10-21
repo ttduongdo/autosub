@@ -7,3 +7,4 @@ jiwer
 peft
 pytest
 python-dotenv
+wandb
