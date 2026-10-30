@@ -38,6 +38,7 @@ import json
 import os
 import random
 import re
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 import requests
@@ -47,6 +48,13 @@ from langdetect import DetectorFactory, LangDetectException, detect
 
 from pipeline.separate import separate_vocals
 from pipeline.ingest import _normalize_audio, resolve_input
+
+# How many songs to download + validate concurrently. This only speeds up
+# the network-bound steps (yt-dlp search/download, LRCLIB duration check);
+# separate_vocals (Demucs) stays strictly sequential below, since it's
+# GPU-bound and running multiple Demucs subprocesses at once contends for
+# the same device rather than actually parallelizing.
+DOWNLOAD_WORKERS = 6
 
 # langdetect's n-gram model is probabilistic and non-deterministic by
 # default (results can vary run-to-run on short/ambiguous text unless
@@ -451,12 +459,30 @@ def build_manifest(
     records = []
 
     billboard_entries = _fetch_billboard_entries(limit=num_songs)
-    for entry in billboard_entries:
+
+    # Phase 1: download + duration-validate every entry concurrently —
+    # this is all network/CPU-bound (yt-dlp search+download, LRCLIB-backed
+    # duration check), so it parallelizes for real. Demucs separation
+    # stays out of this pool (see DOWNLOAD_WORKERS's docstring) and runs
+    # sequentially in phase 2 below, in whatever order downloads finish.
+    downloaded = []
+    with ThreadPoolExecutor(max_workers=DOWNLOAD_WORKERS) as pool:
+        future_to_entry = {
+            pool.submit(_download_billboard_audio, entry): entry
+            for entry in billboard_entries
+        }
+        for future in as_completed(future_to_entry):
+            entry = future_to_entry[future]
+            audio_path = future.result()
+            if audio_path is not None:
+                downloaded.append((entry, audio_path))
+
+    print(f"Billboard: downloaded {len(downloaded)}/{len(billboard_entries)} candidates, separating vocals...")
+
+    # Phase 2: Demucs, one song at a time (GPU-bound — see DOWNLOAD_WORKERS).
+    for entry, audio_path in downloaded:
         if len(records) >= num_songs:
             break
-        audio_path = _download_billboard_audio(entry)
-        if audio_path is None:
-            continue
         vocals_path, _instrumental_path, _mix_path = separate_vocals(audio_path)
         records.append({
             "song_id": entry["song_id"],
