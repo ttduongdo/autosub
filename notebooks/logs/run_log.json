@@ -78,5 +78,19 @@
     "finetuned_wer": 0.5506103763987793,
     "notes": "Same method/epochs/lr as v4 -- only changed variable is data quality (data-fixup-1): dropped duration-mismatched songs, filtered near-empty segments, added chunk-boundary padding. Result: baseline 66.2% -> fine-tuned 55.1%, by far the biggest WER win so far (v4 was +2.4pp, this is +11.2pp), isolating that the data bugs were capping WER more than the full-finetune/epoch choice was. Caveat: train_loss collapsed to ~0.03 while eval_loss stayed flat around 1.2-1.3 across all 5 epochs -- classic overfitting on the smaller 34-song train split. The eval WER gain is real (measured on held-out artists), but there's likely headroom left if overfitting is addressed (fewer epochs, early stopping, or more clean data).",
     "timestamp": "2026-10-30T00:51:00Z"
+  },
+  {
+    "run": "whisper-lora-ablation_20261030-1906",
+    "method": "LoRA",
+    "compute": "GPU (fp16)",
+    "songs": 34,
+    "epochs": 5,
+    "lr": 1e-4,
+    "train_loss": 0.6223723888397217,
+    "eval_loss": 0.9449355006217957,
+    "baseline_wer": 0.6622583926754833,
+    "finetuned_wer": 0.5857070193285859,
+    "notes": "Phase 2 ablation: same clean data + 5 epochs as v5, but LoRA instead of full fine-tune, to isolate which drove v4/v5's win. Result: baseline 66.2% -> fine-tuned 58.6% (+7.7pp) -- a real win, but 3.5pp worse than v5's full-finetune result (+11.2pp), so full fine-tuning does have a genuine edge here, not just noise. Notably, LoRA's loss curve is much healthier than v5's (train_loss 0.62 vs v5's 0.03; eval_loss 0.94 vs v5's 1.28 -- LoRA's eval_loss is actually LOWER than full fine-tune's, despite full fine-tune winning on WER). This means eval_loss and WER aren't moving together cleanly at this scale (greedy-decoded WER vs teacher-forced loss, only 10 eval chunks), and more importantly, that v5's 0.03 train_loss means it essentially memorized the 34-song train split -- a shorter full-finetune run (fewer epochs / early stopping) is a more promising next experiment than concluding full fine-tune is simply better.",
+    "timestamp": "2026-10-30T19:33:29.112894+00:00"
   }
 ]
