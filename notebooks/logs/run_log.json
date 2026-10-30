@@ -62,6 +62,21 @@
     "eval_loss": null,
     "baseline_wer": null,
     "finetuned_wer": null,
-    "notes": "Not a training run -- a manifest cleanup pass, logged here to track dataset provenance over time. Found via manual spot-check (scripts/sample_alignment_check.py) that some LRCLIB-timestamped chunks were badly misaligned with their audio (one off by 16s). Root cause: dataset.py matched LRCLIB lyrics to audio by artist/title text only, no duration check -- a loose YouTube search can return a different edit/upload (wrong video entirely, looped upload, different single cut) whose lyrics text matches but whose timing doesn't. Confirmed via LRCLIB's duration field vs actual downloaded audio duration: 37/81 songs (46%) had a mismatch >5s, up to 647s (Tame Impala 'Dracula' turned out to be a 14-minute interview video, not the song). Dropped all 37. Also: added a 0.25s padding on chunk audio slicing (train.py) to stop clipping word onsets/codas at chunk boundaries, and a filter dropping near-empty/symbol-only segments like placeholder '♪' instrumental-break lines (42/3756 segments, some spanning 20+s). Added a forward-looking duration check in dataset.py (_download_billboard_audio) so future builds reject mismatched songs automatically instead of silently keeping them."
+    "notes": "Not a training run -- a manifest cleanup pass, logged here to track dataset provenance over time. Found via manual spot-check (scripts/sample_alignment_check.py) that some LRCLIB-timestamped chunks were badly misaligned with their audio (one off by 16s). Root cause: dataset.py matched LRCLIB lyrics to audio by artist/title text only, no duration check -- a loose YouTube search can return a different edit/upload (wrong video entirely, looped upload, different single cut) whose lyrics text matches but whose timing doesn't. Confirmed via LRCLIB's duration field vs actual downloaded audio duration: 37/81 songs (46%) had a mismatch >5s, up to 647s (Tame Impala 'Dracula' turned out to be a 14-minute interview video, not the song). Dropped all 37. Also: added a 0.25s padding on chunk audio slicing (train.py) to stop clipping word onsets/codas at chunk boundaries, and a filter dropping near-empty/symbol-only segments like placeholder '♪' instrumental-break lines (42/3756 segments, some spanning 20+s). Added a forward-looking duration check in dataset.py (_download_billboard_audio) so future builds reject mismatched songs automatically instead of silently keeping them.",
+    "timestamp": null
+  },
+  {
+    "run": "whisper-full-v5",
+    "method": "Full fine-tune",
+    "compute": "GPU (fp16)",
+    "songs": 34,
+    "epochs": 5,
+    "lr": 1e-4,
+    "train_loss": 0.034895025193691254,
+    "eval_loss": 1.2820528745651245,
+    "baseline_wer": 0.6622583926754833,
+    "finetuned_wer": 0.5506103763987793,
+    "notes": "Same method/epochs/lr as v4 -- only changed variable is data quality (data-fixup-1): dropped duration-mismatched songs, filtered near-empty segments, added chunk-boundary padding. Result: baseline 66.2% -> fine-tuned 55.1%, by far the biggest WER win so far (v4 was +2.4pp, this is +11.2pp), isolating that the data bugs were capping WER more than the full-finetune/epoch choice was. Caveat: train_loss collapsed to ~0.03 while eval_loss stayed flat around 1.2-1.3 across all 5 epochs -- classic overfitting on the smaller 34-song train split. The eval WER gain is real (measured on held-out artists), but there's likely headroom left if overfitting is addressed (fewer epochs, early stopping, or more clean data).",
+    "timestamp": "2026-10-30T00:51:00Z"
   }
 ]
