@@ -36,6 +36,11 @@ from transformers import (
 
 SAMPLE_RATE = 16000
 CHUNK_DURATION = 30.0  # seconds — matches Whisper's native input window
+CHUNK_PADDING = 0.25  # seconds — LRCLIB line timestamps are approximate, so
+# slicing exactly [start, end] clips word onsets/codas that spill slightly
+# outside the marked window (confirmed by manual spot-check, see
+# scripts/sample_alignment_check.py). Pad both edges to catch that without
+# pulling in a neighboring line's words.
 REPO_ROOT = Path(__file__).parents[1]
 
 
@@ -70,7 +75,13 @@ def _group_into_chunks(segments: list[dict], chunk_duration: float = CHUNK_DURAT
     A single segment longer than chunk_duration (unusual, but possible —
     e.g. a sparse verse with a long pause) becomes its own chunk rather
     than being split further.
+
+    Drops near-empty segments (text length <= 2, e.g. "♪" placeholders for
+    instrumental breaks) before grouping — some span 20+ seconds of real
+    audio, which would otherwise train the model to map long stretches of
+    vocals/instrumental onto a near-empty label.
     """
+    segments = [s for s in segments if len(s["text"].strip()) > 2]
     if not segments:
         return []
 
@@ -133,8 +144,8 @@ def _build_hf_dataset(records: list[dict], processor: WhisperProcessor) -> Datas
         if sample_rate != SAMPLE_RATE:
             waveform = torchaudio.functional.resample(waveform, sample_rate, SAMPLE_RATE)
 
-        start_sample = int(example["start"] * SAMPLE_RATE)
-        end_sample = min(int(example["end"] * SAMPLE_RATE), waveform.shape[1])
+        start_sample = max(int((example["start"] - CHUNK_PADDING) * SAMPLE_RATE), 0)
+        end_sample = min(int((example["end"] + CHUNK_PADDING) * SAMPLE_RATE), waveform.shape[1])
         chunk_waveform = waveform[0, start_sample:end_sample].numpy()
 
         example["input_features"] = processor.feature_extractor(

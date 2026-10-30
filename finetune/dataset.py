@@ -41,6 +41,7 @@ import re
 from pathlib import Path
 
 import requests
+import torchaudio
 import yt_dlp
 from langdetect import DetectorFactory, LangDetectException, detect
 
@@ -126,10 +127,18 @@ def _parse_lrc(lrc_text: str) -> list[dict]:
     return segments
 
 
-def _fetch_synced_lyrics(artist: str, title: str) -> list[dict] | None:
+def _fetch_synced_lyrics(artist: str, title: str) -> tuple[list[dict], float] | None:
     """Query LRCLIB for a song's line-level synced lyrics. Returns None
     (never raises) if not found or no synced version exists — common,
-    expected outcomes, not errors.
+    expected outcomes, not errors. On success, returns (segments,
+    lrclib_duration) — lrclib_duration is the duration (seconds) of the
+    recording LRCLIB's timestamps are actually synced to, which the caller
+    must check against the downloaded audio's real duration before trusting
+    the timestamps (see _fetch_billboard_entries/_download_billboard_audio):
+    LRCLIB matches on artist/title text only, so a loose YouTube search can
+    return a different edit/length of the song (extended intro, looped
+    upload, different single/album cut) whose lyrics text matches but whose
+    timing is entirely wrong for that audio.
 
     Using LRCLIB instead of e.g. running Whisper on the song to get
     segment timing avoids a circular dependency: we'd otherwise be using
@@ -152,7 +161,9 @@ def _fetch_synced_lyrics(artist: str, title: str) -> list[dict] | None:
         if not synced:
             return None
         segments = _parse_lrc(synced)
-        return segments or None
+        if not segments:
+            return None
+        return segments, data.get("duration", 0.0)
     except requests.RequestException as e:
         print(f"Skipping lyrics lookup for {artist!r} - {title!r}: {e}")
         return None
@@ -175,9 +186,10 @@ def _fetch_billboard_entries(limit: int) -> list[dict]:
             continue
 
         primary_artist = _clean_artist_name(full_artist)
-        segments = _fetch_synced_lyrics(primary_artist, title)
-        if not segments:
+        result = _fetch_synced_lyrics(primary_artist, title)
+        if not result:
             continue
+        segments, lrclib_duration = result
         full_text = " ".join(s["text"] for s in segments)
         if not _is_english(full_text):
             continue
@@ -187,6 +199,7 @@ def _fetch_billboard_entries(limit: int) -> list[dict]:
             "artist": primary_artist,
             "title": title,
             "lyrics_segments": segments,
+            "lrclib_duration": lrclib_duration,
         })
     return entries
 
@@ -215,17 +228,42 @@ def _search_and_download_audio(query: str, output_dir: Path) -> Path:
         return Path(ydl.prepare_filename(entry_info))
 
 
+# How far (seconds) a downloaded video's duration may differ from LRCLIB's
+# recording duration before the match is rejected as unreliable. A loose
+# YouTube search can return a different edit of the song (extended intro,
+# a looped upload, a different single/album cut) — same title/artist text,
+# but LRCLIB's line timestamps would then apply to the wrong audio
+# throughout, not just near the edges. Found by spot-checking training
+# chunks: one entry's audio ran ~116s longer than LRCLIB's duration, and
+# every timestamp in it was off by 10-16s.
+DURATION_MISMATCH_TOLERANCE = 5.0
+
+
 def _download_billboard_audio(entry: dict) -> Path | None:
     """Resolve audio for a Billboard entry via YouTube search + download,
     then normalize it the same way pipeline.ingest.resolve_input would.
     Returns None (never raises) on failure — a bad search match, no
-    results, or a blocked/failed download are all expected possibilities,
-    not errors worth crashing the whole manifest build over.
+    results, a blocked/failed download, or a duration mismatch against
+    LRCLIB's recording (see DURATION_MISMATCH_TOLERANCE) are all expected
+    possibilities, not errors worth crashing the whole manifest build over.
     """
     query = f"{entry['artist']} {entry['title']}"
     try:
         raw_path = _search_and_download_audio(query, RAW_DIR)
-        return _normalize_audio(raw_path, sample_rate=16000)
+        audio_path = _normalize_audio(raw_path, sample_rate=16000)
+
+        waveform, sample_rate = torchaudio.load(str(audio_path))
+        audio_duration = waveform.shape[1] / sample_rate
+        lrclib_duration = entry.get("lrclib_duration", 0.0)
+        if lrclib_duration and abs(audio_duration - lrclib_duration) > DURATION_MISMATCH_TOLERANCE:
+            print(
+                f"Skipping Billboard entry {entry['song_id']}: downloaded audio is "
+                f"{audio_duration:.0f}s but LRCLIB's synced lyrics are for a "
+                f"{lrclib_duration:.0f}s recording — likely the wrong edit/upload, "
+                f"timestamps would be unreliable."
+            )
+            return None
+        return audio_path
     except Exception as e:
         print(f"Skipping Billboard entry {entry['song_id']}: {e}")
         return None

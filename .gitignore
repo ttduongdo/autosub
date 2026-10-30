@@ -8,6 +8,7 @@ data/checkpoints/
 data/processed/
 data/raw/
 data/.gitkeep
+data/alignment_check/
 
 ARCHITECTURE.md
 PIPELINE.md

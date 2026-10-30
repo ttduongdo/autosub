@@ -1,0 +1,67 @@
+[
+  {
+    "run": "v1",
+    "method": "LoRA",
+    "compute": "MPS",
+    "songs": 9,
+    "epochs": 3,
+    "lr": 1e-3,
+    "train_loss": null,
+    "eval_loss": null,
+    "baseline_wer": 0.692,
+    "finetuned_wer": 0.884,
+    "notes": "Too little data + too high LR; model barely moved from baseline."
+  },
+  {
+    "run": "v2",
+    "method": "LoRA",
+    "compute": "MPS",
+    "songs": 50,
+    "epochs": 3,
+    "lr": 1e-4,
+    "train_loss": 0.40,
+    "eval_loss": 1.97,
+    "baseline_wer": 0.883,
+    "finetuned_wer": 0.947,
+    "notes": "Large train/eval loss gap -- overfit."
+  },
+  {
+    "run": "v3",
+    "method": "LoRA",
+    "compute": "MPS",
+    "songs": 100,
+    "epochs": 3,
+    "lr": 1e-4,
+    "train_loss": 1.56,
+    "eval_loss": 1.25,
+    "baseline_wer": 0.687,
+    "finetuned_wer": 0.804,
+    "notes": "Healthy loss behavior (not overfit) but WER still regressed -- read as undertraining."
+  },
+  {
+    "run": "v4",
+    "method": "Full fine-tune",
+    "compute": "GPU (fp16)",
+    "songs": 81,
+    "epochs": 5,
+    "lr": 1e-4,
+    "train_loss": null,
+    "eval_loss": null,
+    "baseline_wer": 0.687,
+    "finetuned_wer": 0.664,
+    "notes": "First run to beat baseline. Two variables changed at once vs v3 (full fine-tune + more epochs) -- doesn't isolate which mattered. ~13min on Colab GPU vs v3's ~6.5hr on MPS."
+  },
+  {
+    "run": "data-fixup-1",
+    "method": null,
+    "compute": null,
+    "songs": 44,
+    "epochs": null,
+    "lr": null,
+    "train_loss": null,
+    "eval_loss": null,
+    "baseline_wer": null,
+    "finetuned_wer": null,
+    "notes": "Not a training run -- a manifest cleanup pass, logged here to track dataset provenance over time. Found via manual spot-check (scripts/sample_alignment_check.py) that some LRCLIB-timestamped chunks were badly misaligned with their audio (one off by 16s). Root cause: dataset.py matched LRCLIB lyrics to audio by artist/title text only, no duration check -- a loose YouTube search can return a different edit/upload (wrong video entirely, looped upload, different single cut) whose lyrics text matches but whose timing doesn't. Confirmed via LRCLIB's duration field vs actual downloaded audio duration: 37/81 songs (46%) had a mismatch >5s, up to 647s (Tame Impala 'Dracula' turned out to be a 14-minute interview video, not the song). Dropped all 37. Also: added a 0.25s padding on chunk audio slicing (train.py) to stop clipping word onsets/codas at chunk boundaries, and a filter dropping near-empty/symbol-only segments like placeholder '♪' instrumental-break lines (42/3756 segments, some spanning 20+s). Added a forward-looking duration check in dataset.py (_download_billboard_audio) so future builds reject mismatched songs automatically instead of silently keeping them."
+  }
+]
