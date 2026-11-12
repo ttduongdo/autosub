@@ -19,6 +19,7 @@ for the baseline-vs-fine-tuned WER comparison that uses this checkpoint.
 import json
 import time
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -42,6 +43,12 @@ CHUNK_PADDING = 0.25  # seconds — LRCLIB line timestamps are approximate, so
 # scripts/sample_alignment_check.py). Pad both edges to catch that without
 # pulling in a neighboring line's words.
 REPO_ROOT = Path(__file__).parents[1]
+
+# Every run's logs land here, whether started from this CLI script or the
+# Colab notebook (notebooks/experiments.ipynb) — one place for
+# ARCHITECTURE.md/README.md to cite regardless of where the run happened.
+LOGS_DIR = REPO_ROOT / "notebooks" / "logs"
+RUN_LOG_PATH = LOGS_DIR / "run_log.json"
 
 
 def _resolve_record_paths(record: dict) -> dict:
@@ -177,34 +184,84 @@ class _DataCollatorSpeechSeq2SeqWithPadding:
         return batch
 
 
-class _ProgressTimerCallback(TrainerCallback):
-    """Prints a clear progress line (step count, % done, elapsed time,
-    estimated remaining time, current loss) on every training log event —
-    more visible than the default tqdm bar alone, and keeps working even
-    when output is piped/redirected rather than shown in an interactive
-    terminal.
+def make_run_key(run_name: str) -> str:
+    """run_name alone isn't unique across reruns (e.g. retrying
+    'whisper-full-v5' after a crash would silently overwrite the first
+    attempt's logs). Appends a UTC timestamp so every run gets its own
+    log files while keeping the meaningful name readable in front:
+    'whisper-full-v5_20261030-0051'.
     """
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M")
+    return f"{run_name}_{timestamp}"
+
+
+def load_run_log() -> list[dict]:
+    if not RUN_LOG_PATH.exists():
+        return []
+    return json.loads(RUN_LOG_PATH.read_text())
+
+
+def append_run_log(entry: dict) -> None:
+    """Append one row to notebooks/logs/run_log.json. entry should match
+    the existing schema: run, method, compute, songs, epochs, lr,
+    train_loss, eval_loss, baseline_wer, finetuned_wer, notes, timestamp.
+    Use None for fields that don't apply. Adds a UTC timestamp
+    automatically if the entry doesn't already have one.
+    """
+    entry = dict(entry)
+    entry.setdefault("timestamp", datetime.now(timezone.utc).isoformat())
+    LOGS_DIR.mkdir(parents=True, exist_ok=True)
+    log = load_run_log()
+    log.append(entry)
+    RUN_LOG_PATH.write_text(json.dumps(log, indent=2))
+    print(f"Logged run '{entry.get('run')}' — {len(log)} total entries.")
+
+
+class _TrainingLogCallback(TrainerCallback):
+    """Prints step count, % done, elapsed/remaining time, current loss on
+    every log event, AND appends every log event (train step + per-epoch
+    eval) to notebooks/logs/<run_key>_train.jsonl as it happens — so
+    progress survives a disconnect/crash instead of only living in
+    captured stdout, and every run's full epoch-by-epoch history ends up
+    in the same logs folder as everything else (including runs started
+    from the Colab notebook instead of this script).
+    """
+
+    def __init__(self, run_key: str):
+        LOGS_DIR.mkdir(parents=True, exist_ok=True)
+        self.log_path = LOGS_DIR / f"{run_key}_train.jsonl"
+        self.log_path.write_text("")  # start fresh for this run
 
     def on_train_begin(self, args, state, control, **kwargs):
         self._start_time = time.monotonic()
 
     def on_log(self, args, state, control, logs=None, **kwargs):
-        if logs is None or "loss" not in logs:
-            return  # eval-only log events don't carry training loss/progress
+        if logs is None:
+            return
 
         elapsed = time.monotonic() - self._start_time
-        total_steps = state.max_steps
-        current_step = state.global_step
-        fraction_done = current_step / total_steps if total_steps else 0.0
+        record = {
+            "step": state.global_step,
+            "epoch": state.epoch,
+            "elapsed_seconds": elapsed,
+            **logs,
+        }
+        with self.log_path.open("a") as f:
+            f.write(json.dumps(record) + "\n")
 
-        remaining = (elapsed / current_step) * (total_steps - current_step) if current_step else 0.0
-
-        print(
-            f"[train] step {current_step}/{total_steps} ({fraction_done:.0%}) "
-            f"| loss {logs['loss']:.4f} "
-            f"| elapsed {_format_duration(elapsed)} "
-            f"| est. remaining {_format_duration(remaining)}"
-        )
+        if "loss" in logs:
+            total_steps = state.max_steps
+            current_step = state.global_step
+            fraction_done = current_step / total_steps if total_steps else 0.0
+            remaining = (elapsed / current_step) * (total_steps - current_step) if current_step else 0.0
+            print(
+                f"[train] step {current_step}/{total_steps} ({fraction_done:.0%}) "
+                f"| loss {logs['loss']:.4f} "
+                f"| elapsed {_format_duration(elapsed)} "
+                f"| est. remaining {_format_duration(remaining)}"
+            )
+        elif "eval_loss" in logs:
+            print(f"[eval]  epoch {state.epoch:.0f} | eval_loss {logs['eval_loss']:.4f}")
 
 
 def _format_duration(seconds: float) -> str:
@@ -246,7 +303,7 @@ def _build_full_model(base_model_id: str) -> WhisperForConditionalGeneration:
 
 def train(
     manifest_path: Path,
-    output_dir: Path,
+    output_dir: Path | None = None,
     base_model_id: str = "openai/whisper-base",
     num_epochs: int = 3,
     batch_size: int = 8,
@@ -256,10 +313,10 @@ def train(
     run_name: str | None = None,
     report_to_wandb: bool = False,
     full_finetune: bool = False,
-) -> Path:
+) -> dict:
     """Fine-tune base_model_id on the manifest's train split, using the
-    eval split for periodic validation, and save to output_dir. Returns
-    output_dir.
+    eval split for periodic validation, and save to output_dir (defaults
+    to data/checkpoints/<run_key>).
 
     By default uses a LoRA adapter (cheap, fast, ~1.6% of params trainable
     — practical on a laptop/MPS). Set full_finetune=True to train every
@@ -278,10 +335,22 @@ def train(
     instead of starting over from the base model — skips re-running
     already-completed epochs/steps.
 
-    run_name/report_to_wandb, if set, log the run to Weights & Biases
-    (requires `wandb login` to have been run already) so multiple GPU
-    experiments can be compared side by side.
+    run_name is required — it names this run's log files in
+    notebooks/logs/ (see make_run_key: run_name + a UTC timestamp, so
+    rerunning the same run_name never overwrites a previous attempt's
+    logs). report_to_wandb additionally logs the run to Weights & Biases
+    (requires `wandb login` to have been run already).
+
+    Returns {run_key, output_dir, final_train_loss, final_eval_loss,
+    num_train_songs} — run_key and output_dir are what evaluate.py's
+    compare_baseline_vs_finetuned needs next.
     """
+    if run_name is None:
+        raise ValueError("run_name is required — it names this run's log file in notebooks/logs/.")
+    run_key = make_run_key(run_name)
+    if output_dir is None:
+        output_dir = REPO_ROOT / "data" / "checkpoints" / run_key
+
     train_records, eval_records = load_manifest(manifest_path)
 
     processor = WhisperProcessor.from_pretrained(base_model_id, task="transcribe")
@@ -307,7 +376,7 @@ def train(
         remove_unused_columns=False,
         logging_steps=1,
         report_to=["wandb"] if report_to_wandb else [],
-        run_name=run_name,
+        run_name=run_key,
     )
 
     trainer = Seq2SeqTrainer(
@@ -316,7 +385,7 @@ def train(
         train_dataset=train_dataset,
         eval_dataset=eval_dataset,
         data_collator=data_collator,
-        callbacks=[_ProgressTimerCallback()],
+        callbacks=[_TrainingLogCallback(run_key)],
         processing_class=processor,
     )
 
@@ -325,4 +394,14 @@ def train(
     output_dir.mkdir(parents=True, exist_ok=True)
     model.save_pretrained(output_dir)
     processor.save_pretrained(output_dir)
-    return output_dir
+
+    train_losses = [h["loss"] for h in trainer.state.log_history if "loss" in h]
+    eval_losses = [h["eval_loss"] for h in trainer.state.log_history if "eval_loss" in h]
+
+    return {
+        "run_key": run_key,
+        "output_dir": output_dir,
+        "final_train_loss": train_losses[-1] if train_losses else None,
+        "final_eval_loss": eval_losses[-1] if eval_losses else None,
+        "num_train_songs": len(train_records),
+    }

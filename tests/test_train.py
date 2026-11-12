@@ -224,14 +224,15 @@ def test_train_runs_one_step_without_crashing(tmp_path):
     ]))
     output_dir = tmp_path / "checkpoint"
 
-    result_dir = train(
+    result = train(
         manifest_path=manifest_path,
         output_dir=output_dir,
         base_model_id=MODEL_ID,
         batch_size=1,
         max_steps=1,
+        run_name="test-smoke",
     )
 
-    assert result_dir == output_dir
+    assert result["output_dir"] == output_dir
     assert (output_dir / "adapter_config.json").exists()
     assert (output_dir / "processor_config.json").exists()

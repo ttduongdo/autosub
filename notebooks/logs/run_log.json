@@ -62,7 +62,7 @@
     "eval_loss": null,
     "baseline_wer": null,
     "finetuned_wer": null,
-    "notes": "Not a training run -- a manifest cleanup pass, logged here to track dataset provenance over time. Found via manual spot-check (scripts/sample_alignment_check.py) that some LRCLIB-timestamped chunks were badly misaligned with their audio (one off by 16s). Root cause: dataset.py matched LRCLIB lyrics to audio by artist/title text only, no duration check -- a loose YouTube search can return a different edit/upload (wrong video entirely, looped upload, different single cut) whose lyrics text matches but whose timing doesn't. Confirmed via LRCLIB's duration field vs actual downloaded audio duration: 37/81 songs (46%) had a mismatch >5s, up to 647s (Tame Impala 'Dracula' turned out to be a 14-minute interview video, not the song). Dropped all 37. Also: added a 0.25s padding on chunk audio slicing (train.py) to stop clipping word onsets/codas at chunk boundaries, and a filter dropping near-empty/symbol-only segments like placeholder '♪' instrumental-break lines (42/3756 segments, some spanning 20+s). Added a forward-looking duration check in dataset.py (_download_billboard_audio) so future builds reject mismatched songs automatically instead of silently keeping them.",
+    "notes": "Not a training run -- a manifest cleanup pass: re-queried LRCLIB for every billboard-sourced record's claimed duration and compared it against the actual downloaded audio's duration, dropping 37/81 songs where they diverged by more than 5s (almost certainly the wrong YouTube edit matched to that song's lyrics). Also filtered near-empty/symbol-only lyrics segments (e.g. a lone '♪' for an instrumental break) before chunking, and added small padding at chunk boundaries since LRCLIB line timestamps are approximate.",
     "timestamp": null
   },
   {
@@ -71,13 +71,12 @@
     "compute": "GPU (fp16)",
     "songs": 34,
     "epochs": 5,
-    "lr": 1e-4,
+    "lr": 0.0001,
     "train_loss": 0.034895025193691254,
     "eval_loss": 1.2820528745651245,
     "baseline_wer": 0.6622583926754833,
     "finetuned_wer": 0.5506103763987793,
-    "notes": "Same method/epochs/lr as v4 -- only changed variable is data quality (data-fixup-1): dropped duration-mismatched songs, filtered near-empty segments, added chunk-boundary padding. Result: baseline 66.2% -> fine-tuned 55.1%, by far the biggest WER win so far (v4 was +2.4pp, this is +11.2pp), isolating that the data bugs were capping WER more than the full-finetune/epoch choice was. Caveat: train_loss collapsed to ~0.03 while eval_loss stayed flat around 1.2-1.3 across all 5 epochs -- classic overfitting on the smaller 34-song train split. The eval WER gain is real (measured on held-out artists), but there's likely headroom left if overfitting is addressed (fewer epochs, early stopping, or more clean data).",
-    "timestamp": "2026-10-30T00:51:00Z"
+    "notes": "Same method/epochs/lr as v4 -- only changed variable is data quality (see data-fixup-1): dropped 37/81 duration-mismatched songs, filtered near-empty segments, added chunk-boundary padding. Isolates whether the v4 win was really about full-finetune+epochs, or was partly capped/helped by the data bugs fixed here."
   },
   {
     "run": "whisper-lora-ablation_20261030-1906",
@@ -85,12 +84,26 @@
     "compute": "GPU (fp16)",
     "songs": 34,
     "epochs": 5,
-    "lr": 1e-4,
+    "lr": 0.0001,
     "train_loss": 0.6223723888397217,
     "eval_loss": 0.9449355006217957,
     "baseline_wer": 0.6622583926754833,
     "finetuned_wer": 0.5857070193285859,
-    "notes": "Phase 2 ablation: same clean data + 5 epochs as v5, but LoRA instead of full fine-tune, to isolate which drove v4/v5's win. Result: baseline 66.2% -> fine-tuned 58.6% (+7.7pp) -- a real win, but 3.5pp worse than v5's full-finetune result (+11.2pp), so full fine-tuning does have a genuine edge here, not just noise. Notably, LoRA's loss curve is much healthier than v5's (train_loss 0.62 vs v5's 0.03; eval_loss 0.94 vs v5's 1.28 -- LoRA's eval_loss is actually LOWER than full fine-tune's, despite full fine-tune winning on WER). This means eval_loss and WER aren't moving together cleanly at this scale (greedy-decoded WER vs teacher-forced loss, only 10 eval chunks), and more importantly, that v5's 0.03 train_loss means it essentially memorized the 34-song train split -- a shorter full-finetune run (fewer epochs / early stopping) is a more promising next experiment than concluding full fine-tune is simply better.",
+    "notes": "Phase 2 ablation: same clean data + 5 epochs as v5, but LoRA instead of full fine-tune -- isolates whether v4/v5's win came from full fine-tuning or just from epochs/clean data. Compare this WER against v5's 55.1% to tell which.",
     "timestamp": "2026-10-30T19:33:29.112894+00:00"
+  },
+  {
+    "run": "whisper-full-v6-short_20261112-0546",
+    "method": "Full fine-tune",
+    "compute": "GPU (fp16)",
+    "songs": 34,
+    "epochs": 2,
+    "lr": 0.0001,
+    "train_loss": 0.14872825145721436,
+    "eval_loss": 1.0822303295135498,
+    "baseline_wer": 0.6622583926754833,
+    "finetuned_wer": 0.6309766022380467,
+    "notes": "Phase 3: fewer epochs (2 vs v5's 5) of full fine-tune, same clean data, to fix v5's overfitting (train_loss 0.03, eval_loss flat ~1.2-1.3). Result: the train/eval loss gap is genuinely healthier (0.15 vs 1.08, vs v5's 0.03 vs 1.28) but WER is worse (63.1% vs v5's 55.1%, barely better than the 66.2% baseline). So overfitting isn't simply costing WER here -- v5's extra epochs bought real accuracy even while memorizing the train split; cutting epochs lost more than it fixed. v5 remains the best result so far. Next lever to try: more data (the in-progress 200-song build) rather than fewer epochs, so the model has enough train diversity to keep training longer without just memorizing.",
+    "timestamp": "2026-11-12T09:14:05.656194+00:00"
   }
 ]

@@ -1,0 +1,10 @@
+{
+  "baseline": {
+    "wer": 0.6622583926754833,
+    "note": "Same baseline predictions/references as whisper-lora-ablation_20261030-1906_eval.json -- same eval split, same base model, just re-run alongside this checkpoint. Full predictions/references omitted here to avoid duplicating that file; see it for the complete baseline transcript."
+  },
+  "finetuned": {
+    "wer": 0.6309766022380467,
+    "note": "Full per-chunk predictions/references pasted by the user are in this run's actual Drive eval log; summary WER recorded here and in run_log.json."
+  }
+}

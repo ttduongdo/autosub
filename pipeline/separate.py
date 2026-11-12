@@ -5,6 +5,7 @@ TODO:
 - produce isolated vocal stem, keep original mix
 """
 
+import sys
 from pathlib import Path
 import subprocess
 
@@ -27,9 +28,17 @@ def separate_vocals(audio_path: Path) -> tuple[Path, Path, Path]:
     """
     model = "htdemucs"
     try:
+        # Invoke demucs as "python -m demucs" using the SAME interpreter
+        # this process is running under (sys.executable), instead of a
+        # bare "demucs" resolved against the caller's inherited PATH.
+        # A bare "demucs" silently finds a different Python environment's
+        # console script (or none at all -> FileNotFoundError) whenever
+        # this process was started via a venv's python by direct path
+        # without that venv's bin/ being prepended to PATH -- confirmed to
+        # actually happen (crashed a real dataset build mid-run).
         subprocess.run(
             [
-                "demucs",
+                sys.executable, "-m", "demucs",
                 "-n", model,
                 "--two-stems", "vocals",
                 "-o", str(OUTPUT_DIR),

@@ -38,6 +38,7 @@ import json
 import os
 import random
 import re
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
@@ -62,6 +63,8 @@ DOWNLOAD_WORKERS = 6
 DetectorFactory.seed = 0
 
 BILLBOARD_CHART_URL = "https://raw.githubusercontent.com/mhollingshead/billboard-hot-100/main/recent.json"
+BILLBOARD_VALID_DATES_URL = "https://raw.githubusercontent.com/mhollingshead/billboard-hot-100/main/valid_dates.json"
+BILLBOARD_WEEK_URL_TEMPLATE = "https://raw.githubusercontent.com/mhollingshead/billboard-hot-100/main/date/{date}.json"
 LRCLIB_API_URL = "https://lrclib.net/api/get"
 
 JAMENDO_CLIENT_ID = os.environ.get("JAMENDO_CLIENT_ID", "")
@@ -94,6 +97,42 @@ def _fetch_billboard_chart() -> list[dict]:
     response = requests.get(BILLBOARD_CHART_URL, timeout=30)
     response.raise_for_status()
     return response.json().get("data", [])
+
+
+def _fetch_billboard_charts(num_weeks: int) -> list[dict]:
+    """Fetch the `num_weeks` most recent Billboard Hot 100 charts and
+    return their rows concatenated, deduped by (artist, title) -- most
+    recent week first, so a song charting across several consecutive
+    weeks is kept once, from its most recent appearance.
+
+    A single week's chart is always exactly 100 rows (Billboard's Hot 100
+    is, definitionally, 100 songs), so num_songs targets above roughly
+    60-70 (after lyrics-lookup/audio-validation attrition) are structurally
+    unreachable from one week alone -- confirmed empirically (num_songs=200
+    against a single week topped out at 53 usable tracks). Consecutive
+    weeks overlap heavily (most songs stay charted for many weeks), so this
+    still needs noticeably more than num_songs/100 weeks to gather enough
+    distinct candidates.
+    """
+    if num_weeks <= 1:
+        return _fetch_billboard_chart()
+
+    dates_response = requests.get(BILLBOARD_VALID_DATES_URL, timeout=30)
+    dates_response.raise_for_status()
+    recent_dates = dates_response.json()[-num_weeks:][::-1]  # most recent first
+
+    seen = set()
+    rows = []
+    for date in recent_dates:
+        week_response = requests.get(BILLBOARD_WEEK_URL_TEMPLATE.format(date=date), timeout=30)
+        week_response.raise_for_status()
+        for row in week_response.json().get("data", []):
+            key = (row.get("artist", "").strip().lower(), row.get("song", "").strip().lower())
+            if key in seen or not key[0] or not key[1]:
+                continue
+            seen.add(key)
+            rows.append(row)
+    return rows
 
 
 def _clean_artist_name(artist: str) -> str:
@@ -135,6 +174,12 @@ def _parse_lrc(lrc_text: str) -> list[dict]:
     return segments
 
 
+LRCLIB_RETRY_STATUS_CODES = {429, 500, 502, 503, 504}
+LRCLIB_MAX_RETRIES = 4
+LRCLIB_BASE_BACKOFF_SECONDS = 2.0
+LRCLIB_REQUEST_DELAY_SECONDS = 0.3  # fixed delay between every call, to avoid tripping the rate limit at all
+
+
 def _fetch_synced_lyrics(artist: str, title: str) -> tuple[list[dict], float] | None:
     """Query LRCLIB for a song's line-level synced lyrics. Returns None
     (never raises) if not found or no synced version exists — common,
@@ -153,37 +198,57 @@ def _fetch_synced_lyrics(artist: str, title: str) -> tuple[list[dict], float] | 
     the model's own (possibly wrong) output to generate the data used to
     train that same model. LRCLIB's timestamps are independently
     human-submitted, with no ASR involved.
+
+    Retries with exponential backoff on 429 (rate limit) and 5xx — these
+    are NOT "no lyrics for this song," they're a transient server
+    response, and treating them as the former silently throws away usable
+    candidates. Confirmed empirically: a build requesting 200 candidates
+    back-to-back with no delay hit a 429/503 on effectively every lookup.
+    A fixed delay between every call (not just after a failure) also
+    helps avoid tripping the limit in the first place.
     """
-    try:
-        response = requests.get(
-            LRCLIB_API_URL,
-            params={"artist_name": artist, "track_name": title},
-            headers={"User-Agent": "AutoSub v1.0 (dataset builder)"},
-            timeout=15,
-        )
-        if response.status_code == 404:
+    for attempt in range(LRCLIB_MAX_RETRIES + 1):
+        time.sleep(LRCLIB_REQUEST_DELAY_SECONDS)
+        try:
+            response = requests.get(
+                LRCLIB_API_URL,
+                params={"artist_name": artist, "track_name": title},
+                headers={"User-Agent": "AutoSub v1.0 (dataset builder)"},
+                timeout=15,
+            )
+            if response.status_code == 404:
+                return None
+            if response.status_code in LRCLIB_RETRY_STATUS_CODES and attempt < LRCLIB_MAX_RETRIES:
+                time.sleep(LRCLIB_BASE_BACKOFF_SECONDS * (2 ** attempt))
+                continue
+            response.raise_for_status()
+            data = response.json()
+            synced = data.get("syncedLyrics")
+            if not synced:
+                return None
+            segments = _parse_lrc(synced)
+            if not segments:
+                return None
+            return segments, data.get("duration", 0.0)
+        except requests.RequestException as e:
+            if attempt < LRCLIB_MAX_RETRIES:
+                time.sleep(LRCLIB_BASE_BACKOFF_SECONDS * (2 ** attempt))
+                continue
+            print(f"Skipping lyrics lookup for {artist!r} - {title!r} after {attempt + 1} attempts: {e}")
             return None
-        response.raise_for_status()
-        data = response.json()
-        synced = data.get("syncedLyrics")
-        if not synced:
-            return None
-        segments = _parse_lrc(synced)
-        if not segments:
-            return None
-        return segments, data.get("duration", 0.0)
-    except requests.RequestException as e:
-        print(f"Skipping lyrics lookup for {artist!r} - {title!r}: {e}")
-        return None
+    return None
 
 
-def _fetch_billboard_entries(limit: int) -> list[dict]:
-    """Fetch the Billboard chart, look up synced lyrics for each entry, and
-    keep only entries with real, English lyric segments. Returns dicts
-    with song_id, artist, title, lyrics_segments — ready for audio
-    resolution.
+def _fetch_billboard_entries(limit: int, num_weeks: int = 1) -> list[dict]:
+    """Fetch num_weeks of Billboard charts (deduped), look up synced lyrics
+    for each entry, and keep only entries with real, English lyric
+    segments. Returns dicts with song_id, artist, title, lyrics_segments —
+    ready for audio resolution.
+
+    num_weeks > 1 is what makes `limit` (num_songs) values above ~60-70
+    actually reachable -- see _fetch_billboard_charts's docstring.
     """
-    chart = _fetch_billboard_chart()
+    chart = _fetch_billboard_charts(num_weeks)
     entries = []
     for item in chart:
         if len(entries) >= limit:
@@ -437,6 +502,7 @@ def _split_by_artist(records: list[dict], eval_fraction: float = 0.2, seed: int 
 def build_manifest(
     num_songs: int,
     output_path: Path,
+    billboard_weeks: int = 1,
     use_jamendo_fallback: bool = False,
     dali_data_dir: Path | None = None,
     max_jamendo_tracks_scanned: int = 1000,
@@ -445,6 +511,13 @@ def build_manifest(
     Billboard Hot 100 (song/artist via a public chart mirror, line-level
     timed lyrics via LRCLIB, audio via YouTube search). Optionally tops up
     with Jamendo and/or DALI if the primary source doesn't reach num_songs.
+
+    billboard_weeks controls how many of the most recent weekly Hot 100
+    charts to pull and dedupe, since a single week is always exactly 100
+    songs -- num_songs targets above roughly 60-70 (after lyrics-lookup
+    and audio-duration-validation attrition) need billboard_weeks > 1 to
+    even have enough raw candidates to reach for (see
+    _fetch_billboard_charts's docstring).
 
     Writes a JSON manifest: [{song_id, artist, source, audio_path,
     vocals_path, lyrics_segments, split}, ...], where lyrics_segments is a
@@ -458,7 +531,7 @@ def build_manifest(
     """
     records = []
 
-    billboard_entries = _fetch_billboard_entries(limit=num_songs)
+    billboard_entries = _fetch_billboard_entries(limit=num_songs, num_weeks=billboard_weeks)
 
     # Phase 1: download + duration-validate every entry concurrently —
     # this is all network/CPU-bound (yt-dlp search+download, LRCLIB-backed

@@ -37,6 +37,15 @@ The pipeline and demo work end to end. The table below is every fine-tuning run 
 | v2 | LoRA | 50 | 3 | 88.3% → 94.7% |
 | v3 | LoRA | 100 | 3 | 68.7% → 80.4% |
 | v4 | Full fine-tune | 81 | 5 | 68.7% → 66.4% |
+| v5 | Full fine-tune | 34 (cleaned) | 5 | 66.2% → 55.1% |
+| LoRA ablation | LoRA | 34 (cleaned) | 5 | 66.2% → 58.6% |
+| v6-short | Full fine-tune | 34 (cleaned) | 2 | 66.2% → 63.1% |
 
 **v4** Switching from LoRA (which only trains ~1.6% of the model's weights) to full fine-tuning, and from 3 epochs to 5, finally crossed into a net win: 66.4% vs. 68.7% baseline.
+
+**v5** is the best result so far — same method/epochs as v4, but on a cleaned 34-song set after dropping tracks where the audio didn't actually match the lyrics' timing (see Data notes below). 55.1% WER, down from a 92%-ish out-of-the-box baseline on sung lyrics generally.
+
+**LoRA ablation** isolated what actually drove v4/v5's win: same data and epochs as v5, LoRA instead of full fine-tuning. Still a real improvement (58.6%), but full fine-tuning has a genuine edge (+11.2pp vs. LoRA's +7.7pp) — it's not just more epochs or cleaner data.
+
+**v6-short** tested whether v5's full fine-tune was overfitting (its train loss collapses to ~0.03 while eval loss stays flat). Cutting to 2 epochs did make that loss gap healthier, but WER got worse (63.1%), not better — so the "overfitting" is partly just the model continuing to learn useful things past the point its training loss stopped being meaningful as a signal. v5 remains the benchmark to beat; more/cleaner training data is the next lever, not fewer epochs.
 

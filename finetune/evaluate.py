@@ -18,9 +18,16 @@ import torchaudio
 from peft import PeftModel
 from transformers import WhisperForConditionalGeneration, WhisperProcessor
 
-from finetune.train import CHUNK_DURATION, SAMPLE_RATE, _group_into_chunks, _resolve_record_paths
+from finetune.train import (
+    CHUNK_DURATION,
+    CHUNK_PADDING,
+    SAMPLE_RATE,
+    _group_into_chunks,
+    _resolve_record_paths,
+)
 
 BASELINE_MODEL_ID = "openai/whisper-base"
+LOGS_DIR = Path(__file__).parents[1] / "notebooks" / "logs"
 
 # Normalizes case/punctuation/spacing before computing WER, so stylistic
 # differences that aren't real transcription errors (e.g. "Telling" vs
@@ -64,16 +71,16 @@ def _build_eval_chunks(records: list[dict]) -> list[dict]:
 
 def _load_chunk_waveform(audio_path: str, start: float, end: float) -> "torch.Tensor":
     """Load and slice one chunk's audio, mirroring finetune.train's
-    _build_hf_dataset preprocessing exactly, so both eval and training see
-    identically-prepared audio."""
+    _build_hf_dataset preprocessing exactly (including CHUNK_PADDING), so
+    both eval and training see identically-prepared audio."""
     waveform, sample_rate = torchaudio.load(audio_path)
     if waveform.shape[0] > 1:
         waveform = waveform.mean(dim=0, keepdim=True)
     if sample_rate != SAMPLE_RATE:
         waveform = torchaudio.functional.resample(waveform, sample_rate, SAMPLE_RATE)
 
-    start_sample = int(start * SAMPLE_RATE)
-    end_sample = min(int(end * SAMPLE_RATE), waveform.shape[1])
+    start_sample = max(int((start - CHUNK_PADDING) * SAMPLE_RATE), 0)
+    end_sample = min(int((end + CHUNK_PADDING) * SAMPLE_RATE), waveform.shape[1])
     return waveform[0, start_sample:end_sample]
 
 
@@ -150,9 +157,16 @@ def compare_baseline_vs_finetuned(
     manifest_path: Path,
     checkpoint_dir: Path,
     base_model_id: str = BASELINE_MODEL_ID,
+    run_name: str | None = None,
 ) -> dict:
     """Top-level: load the eval split, chunk it, transcribe with both the
     baseline and fine-tuned checkpoints, and report WER for each.
+
+    If run_name is given, writes the full per-chunk result (WER + every
+    prediction/reference pair) to notebooks/logs/<run_name>_eval.json —
+    same logs folder finetune.train's make_run_key-based training JSONL
+    goes to, so a run's train + eval history live side by side regardless
+    of whether it was run from this CLI script or the Colab notebook.
 
     Returns {baseline: {wer, predictions, references},
              finetuned: {wer, predictions, references}}.
@@ -176,4 +190,12 @@ def compare_baseline_vs_finetuned(
     improvement = baseline_result["wer"] - finetuned_result["wer"]
     print(f"Improvement:     {improvement:+.1%} (positive = fine-tuning helped)")
 
-    return {"baseline": baseline_result, "finetuned": finetuned_result}
+    result = {"baseline": baseline_result, "finetuned": finetuned_result}
+
+    if run_name:
+        LOGS_DIR.mkdir(parents=True, exist_ok=True)
+        eval_log_path = LOGS_DIR / f"{run_name}_eval.json"
+        eval_log_path.write_text(json.dumps(result, indent=2))
+        print(f"Eval log written to {eval_log_path}")
+
+    return result
