@@ -23,9 +23,11 @@ Whisper is trained on speech, not singing, and pitch, sustain, and backing instr
 **Pipeline** (`pipeline/`): ingest → Demucs → Whisper → forced alignment → export.
 
 **Fine-tuning** (`finetune/`): 
-- a dataset builder that pulls song picks from the Billboard Hot 100 and gets real timestamps from an independent lyrics database, 
+- a dataset builder that pulls song picks from the Billboard Hot 100 (several weeks' charts, deduped) and gets real timestamps from an independent lyrics database, 
 - a training script that supports either LoRA or full fine-tuning,
 - an eval script that compares baseline vs. fine-tuned WER on a held-out set split by artist.
+
+Training/eval run two ways: a standalone Colab notebook (`notebooks/experiments.ipynb`, Drive-mounted, no repo checkout needed), or — for real git history on every training config instead of notebook-cell diffs — as plain `.py` scripts (`scripts/train_model.py`) run against a GPU via the [Colab CLI](https://github.com/googlecolab/google-colab-cli). `scripts/colab_run.sh` automates the whole provision → install deps → upload code → mount Drive → run sequence, since Colab's free-tier sessions get recycled without warning and otherwise that's ~10 commands to retype by hand each time.
 
 ## Progress
 
@@ -48,4 +50,6 @@ The pipeline and demo work end to end. The table below is every fine-tuning run 
 **LoRA ablation** isolated what actually drove v4/v5's win: same data and epochs as v5, LoRA instead of full fine-tuning. Still a real improvement (58.6%), but full fine-tuning has a genuine edge (+11.2pp vs. LoRA's +7.7pp) — it's not just more epochs or cleaner data.
 
 **v6-short** tested whether v5's full fine-tune was overfitting (its train loss collapses to ~0.03 while eval loss stays flat). Cutting to 2 epochs did make that loss gap healthier, but WER got worse (63.1%), not better — so the "overfitting" is partly just the model continuing to learn useful things past the point its training loss stopped being meaningful as a signal. v5 remains the benchmark to beat; more/cleaner training data is the next lever, not fewer epochs.
+
+**v7** (in progress) tests that data lever directly: the dataset builder now pulls multiple weeks of Billboard charts (deduped by artist/title) instead of just the current week, since a single week is always exactly 100 songs and structurally capped out at ~53 usable tracks for any larger target. This got the training set to 119 cleaned songs, up from 34 — same method/epochs as v5, more data.
 

@@ -1,5 +1,7 @@
 transformers
 torch
+torchaudio
+datasets
 demucs
 yt-dlp
 gradio

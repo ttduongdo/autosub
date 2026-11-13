@@ -17,6 +17,7 @@ Targets CUDA GPU training (fp16 mixed precision). See finetune/evaluate.py
 for the baseline-vs-fine-tuned WER comparison that uses this checkpoint.
 """
 import json
+import os
 import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -44,22 +45,48 @@ CHUNK_PADDING = 0.25  # seconds — LRCLIB line timestamps are approximate, so
 # pulling in a neighboring line's words.
 REPO_ROOT = Path(__file__).parents[1]
 
+# When running against a Colab session instead of a real repo checkout
+# (see the Colab CLI workflow in README.md), audio isn't under REPO_ROOT —
+# it's wherever Drive is mounted. Set AUTOSUB_DRIVE_ROOT (e.g.
+# "/content/drive/MyDrive") to resolve vocals_path/audio_path against
+# Drive instead; unset (the default) keeps resolving against the repo
+# checkout, same as every local/pre-Colab-CLI run. Mirrors
+# notebooks/experiments.ipynb's DRIVE_ROOT/_resolve_vocals_path, which
+# strips the same "data/processed/" prefix for the same reason.
+_DRIVE_ROOT = os.environ.get("AUTOSUB_DRIVE_ROOT")
+DRIVE_ROOT = Path(_DRIVE_ROOT) if _DRIVE_ROOT else None
+
 # Every run's logs land here, whether started from this CLI script or the
 # Colab notebook (notebooks/experiments.ipynb) — one place for
 # ARCHITECTURE.md/README.md to cite regardless of where the run happened.
-LOGS_DIR = REPO_ROOT / "notebooks" / "logs"
+# When DRIVE_ROOT is set, logs/checkpoints go to Drive too, so they
+# survive a Colab session ending (same as the notebook's RUNS_DIR/LOGS_DIR).
+LOGS_DIR = (DRIVE_ROOT / "autosub_runs" / "logs") if DRIVE_ROOT else (REPO_ROOT / "notebooks" / "logs")
 RUN_LOG_PATH = LOGS_DIR / "run_log.json"
 
 
 def _resolve_record_paths(record: dict) -> dict:
     """finetune/dataset.py stores audio_path/vocals_path relative to the
-    repo root (not absolute), so manifests built on one machine still
-    resolve correctly after cloning the repo elsewhere (e.g. a Colab/cloud
-    GPU box). Resolve them to absolute paths here, at load time.
+    repo root (e.g. "data/processed/htdemucs/<id>/vocals.wav"), so
+    manifests built on one machine still resolve correctly after cloning
+    the repo elsewhere. Resolve them to absolute paths here, at load time.
+
+    If AUTOSUB_DRIVE_ROOT is set (running against a Colab session via the
+    Colab CLI, not a real repo checkout), resolve against Drive instead —
+    the audio lives directly under Drive's "processed/" with no "data/"
+    prefix and no repo checkout, same layout the notebook already uses.
     """
     record = dict(record)
     for key in ("audio_path", "vocals_path"):
-        if key in record:
+        if key not in record:
+            continue
+        if DRIVE_ROOT is not None:
+            prefix = "data/processed/"
+            path = record[key]
+            if path.startswith(prefix):
+                path = path[len(prefix):]
+            record[key] = str(DRIVE_ROOT / "processed" / path)
+        else:
             record[key] = str(REPO_ROOT / record[key])
     return record
 
@@ -115,14 +142,27 @@ def _group_into_chunks(segments: list[dict], chunk_duration: float = CHUNK_DURAT
     ]
 
 
+# Whisper's decoder hard-caps generated/label sequences at this many
+# tokens (model.config.max_target_positions for whisper-base); training
+# raises a ValueError and crashes mid-epoch if a label exceeds it.
+WHISPER_MAX_LABEL_TOKENS = 448
+
+
 def _build_hf_dataset(records: list[dict], processor: WhisperProcessor) -> Dataset:
     """Turn manifest records into a HF Dataset with input_features + labels.
     Each song's lyrics_segments are grouped into ~30s chunks
     (_group_into_chunks); each chunk becomes one training example, with its
     audio sliced from vocals_path and its concatenated line text as the
-    label — so a single song contributes several (chunk audio, chunk text)
-    examples rather than one (whole song, whole lyrics) example that would
-    exceed Whisper's native window and label length limits.
+    label.
+
+    _group_into_chunks only bounds chunks by audio duration, not token
+    count -- a dense/fast-lyrics song's 30s window can still tokenize past
+    WHISPER_MAX_LABEL_TOKENS even though its audio fits Whisper's input
+    window fine (confirmed: Taylor Swift's "Babylon" produced a 509-token
+    chunk against whisper-base's 448 cap, crashing a real training run
+    27 steps in). Chunks over the cap are dropped here rather than
+    truncated, since silently cutting lyrics mid-line would train the
+    model on a corrupted label.
     """
     chunk_audio_paths = []
     chunk_starts = []
@@ -161,7 +201,17 @@ def _build_hf_dataset(records: list[dict], processor: WhisperProcessor) -> Datas
         example["labels"] = processor.tokenizer(example["text"]).input_ids
         return example
 
-    return dataset.map(_prepare, remove_columns=dataset.column_names)
+    dataset = dataset.map(_prepare, remove_columns=dataset.column_names)
+
+    too_long = [i for i, labels in enumerate(dataset["labels"]) if len(labels) > WHISPER_MAX_LABEL_TOKENS]
+    if too_long:
+        print(
+            f"Dropping {len(too_long)} chunk(s) with labels over "
+            f"{WHISPER_MAX_LABEL_TOKENS} tokens (would crash training)."
+        )
+        dataset = dataset.select([i for i in range(len(dataset)) if i not in set(too_long)])
+
+    return dataset
 
 
 @dataclass
@@ -349,7 +399,10 @@ def train(
         raise ValueError("run_name is required — it names this run's log file in notebooks/logs/.")
     run_key = make_run_key(run_name)
     if output_dir is None:
-        output_dir = REPO_ROOT / "data" / "checkpoints" / run_key
+        # On Drive when AUTOSUB_DRIVE_ROOT is set, same reasoning as
+        # LOGS_DIR above — survives the Colab session ending.
+        checkpoints_root = (DRIVE_ROOT / "autosub_runs" / "checkpoints") if DRIVE_ROOT else (REPO_ROOT / "data" / "checkpoints")
+        output_dir = checkpoints_root / run_key
 
     train_records, eval_records = load_manifest(manifest_path)
 

@@ -127,7 +127,16 @@ def _fetch_billboard_charts(num_weeks: int) -> list[dict]:
         week_response = requests.get(BILLBOARD_WEEK_URL_TEMPLATE.format(date=date), timeout=30)
         week_response.raise_for_status()
         for row in week_response.json().get("data", []):
-            key = (row.get("artist", "").strip().lower(), row.get("song", "").strip().lower())
+            # Dedup key uses _clean_artist_name, not the raw artist string --
+            # Billboard itself lists the same song under different feature-
+            # credit phrasing across weeks (e.g. "Stella Lefty With Vincent
+            # Mason" one week, "Stella Lefty Featuring Vincent Mason"
+            # another), which a raw-string key treats as two different
+            # songs. Confirmed empirically: this exact pair slipped through
+            # as a real duplicate in a 120-song build before this fix.
+            title = row.get("song", "").strip()
+            artist = _clean_artist_name(row.get("artist", "").strip())
+            key = (artist.lower(), title.lower())
             if key in seen or not key[0] or not key[1]:
                 continue
             seen.add(key)

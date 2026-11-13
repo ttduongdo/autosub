@@ -6,6 +6,15 @@ Run via the Colab CLI against a provisioned GPU runtime, e.g.:
 or
     colab run --gpu T4 scripts/train_model.py
 
+On a Colab session (not a real repo checkout), this process won't have
+data/processed/'s audio on disk -- set AUTOSUB_DRIVE_ROOT to resolve
+audio, checkpoints, and logs against Drive instead (see finetune/train.py's
+DRIVE_ROOT docstring), e.g.:
+    AUTOSUB_DRIVE_ROOT=/content/drive/MyDrive colab exec -s autosub-trainer -f scripts/train_model.py
+Still need the manifest + finetune/ package itself on the session's
+filesystem (colab upload), since those are small, git-trackable files --
+only the (large, binary) audio and run outputs go through Drive.
+
 Edit the RUN_NAME/config block below to match the run you're about to
 make, then run this file -- the same config lives in git history instead
 of being buried in notebook cell outputs.
@@ -27,7 +36,12 @@ result = train(
     full_finetune=FULL_FINETUNE,
     learning_rate=LEARNING_RATE,
     run_name=RUN_NAME,
-    report_to_wandb=True,
+    # W&B off by default here: each Colab CLI session is a fresh, disposable
+    # VM (see scripts/colab_run.sh's recycling note), so `wandb login`
+    # wouldn't persist between runs anyway without extra auth plumbing.
+    # make_run_key's live train JSONL + run_log.json (both on Drive when
+    # AUTOSUB_DRIVE_ROOT is set) already cover per-step/per-run tracking.
+    report_to_wandb=False,
 )
 print(result)
 print("run_key:", result["run_key"])

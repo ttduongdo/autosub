@@ -21,13 +21,13 @@ from transformers import WhisperForConditionalGeneration, WhisperProcessor
 from finetune.train import (
     CHUNK_DURATION,
     CHUNK_PADDING,
+    LOGS_DIR,
     SAMPLE_RATE,
     _group_into_chunks,
     _resolve_record_paths,
 )
 
 BASELINE_MODEL_ID = "openai/whisper-base"
-LOGS_DIR = Path(__file__).parents[1] / "notebooks" / "logs"
 
 # Normalizes case/punctuation/spacing before computing WER, so stylistic
 # differences that aren't real transcription errors (e.g. "Telling" vs
