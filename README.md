@@ -27,7 +27,7 @@ Whisper is trained on speech, not singing, and pitch, sustain, and backing instr
 - a training script that supports either LoRA or full fine-tuning,
 - an eval script that compares baseline vs. fine-tuned WER on a held-out set split by artist.
 
-Training/eval run two ways: a standalone Colab notebook (`notebooks/experiments.ipynb`, Drive-mounted, no repo checkout needed), or — for real git history on every training config instead of notebook-cell diffs — as plain `.py` scripts (`scripts/train_model.py`) run against a GPU via the [Colab CLI](https://github.com/googlecolab/google-colab-cli). `scripts/colab_run.sh` automates the whole provision → install deps → upload code → mount Drive → run sequence, since Colab's free-tier sessions get recycled without warning and otherwise that's ~10 commands to retype by hand each time.
+Training/eval run as plain `.py` scripts (`scripts/train_model.py`) against T4 GPU via the [Colab CLI](https://github.com/googlecolab/google-colab-cli), so every training config lives in git history instead of notebook-cell diffs. `scripts/colab_run.sh` automates the whole provision → install deps → upload code → mount Drive → run sequence.
 
 ## Progress
 
@@ -42,14 +42,17 @@ The pipeline and demo work end to end. The table below is every fine-tuning run 
 | v5 | Full fine-tune | 34 (cleaned) | 5 | 66.2% → 55.1% |
 | LoRA ablation | LoRA | 34 (cleaned) | 5 | 66.2% → 58.6% |
 | v6-short | Full fine-tune | 34 (cleaned) | 2 | 66.2% → 63.1% |
+| v7 | Full fine-tune | 102 (cleaned) | 5 | 69.5% → 52.4% |
 
 **v4** Switching from LoRA (which only trains ~1.6% of the model's weights) to full fine-tuning, and from 3 epochs to 5, finally crossed into a net win: 66.4% vs. 68.7% baseline.
 
-**v5** is the best result so far — same method/epochs as v4, but on a cleaned 34-song set after dropping tracks where the audio didn't actually match the lyrics' timing (see Data notes below). 55.1% WER, down from a 92%-ish out-of-the-box baseline on sung lyrics generally.
+**v5** was the best result up to that point — same method/epochs as v4, but on a cleaned 34-song set after dropping tracks where the audio didn't actually match the lyrics' timing (see Data notes below). 55.1% WER, down from a 92%-ish out-of-the-box baseline on sung lyrics generally.
 
 **LoRA ablation** isolated what actually drove v4/v5's win: same data and epochs as v5, LoRA instead of full fine-tuning. Still a real improvement (58.6%), but full fine-tuning has a genuine edge (+11.2pp vs. LoRA's +7.7pp) — it's not just more epochs or cleaner data.
 
 **v6-short** tested whether v5's full fine-tune was overfitting (its train loss collapses to ~0.03 while eval loss stays flat). Cutting to 2 epochs did make that loss gap healthier, but WER got worse (63.1%), not better — so the "overfitting" is partly just the model continuing to learn useful things past the point its training loss stopped being meaningful as a signal. v5 remains the benchmark to beat; more/cleaner training data is the next lever, not fewer epochs.
 
-**v7** (in progress) tests that data lever directly: the dataset builder now pulls multiple weeks of Billboard charts (deduped by artist/title) instead of just the current week, since a single week is always exactly 100 songs and structurally capped out at ~53 usable tracks for any larger target. This got the training set to 119 cleaned songs, up from 34 — same method/epochs as v5, more data.
+**v7** is the current best result, and tests the data lever directly: the dataset builder now pulls multiple weeks of Billboard charts (deduped by artist/title) instead of just the current week, since a single week is always exactly 100 songs and structurally capped out at ~53 usable tracks for any larger target. This got the training set to 102 cleaned songs (up from 34), same method/epochs as v5 — and the jump in data alone pushed WER down to 52.4%, a 17.2pp improvement over its own baseline (v7 uses a different, larger eval split than v4-v6, so its baseline WER isn't directly comparable to theirs — the fair comparison is each run's own improvement margin, where v7's 17.2pp beats v5's 11.2pp). Confirms more/cleaner training data is a bigger lever here than epoch count or LoRA vs. full fine-tuning.
+
+**v8** (in progress) pushes that same lever further: pulling up to 100 weeks of Billboard history (vs. v7's 20) for a 400-song target, since week-to-week chart overlap means raw-row counts and usable-song counts don't scale linearly — getting meaningfully past 102 clean songs needs a lot more weeks, not proportionally more. Also planning to test more training epochs on the larger set, since v6-short showed overfitting isn't straightforwardly costing WER — a bigger, more diverse training set may tolerate more epochs than the 34/102-song runs did.
 
