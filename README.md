@@ -43,6 +43,8 @@ The pipeline and demo work end to end. The table below is every fine-tuning run 
 | LoRA ablation | LoRA | 34 (cleaned) | 5 | 66.2% → 58.6% |
 | v6-short | Full fine-tune | 34 (cleaned) | 2 | 66.2% → 63.1% |
 | v7 | Full fine-tune | 102 (cleaned) | 5 | 69.5% → 52.4% |
+| v8 | Full fine-tune | 190 (cleaned) | 8 | 72.3% → 54.6% |
+| v9 | Full fine-tune | 190 (cleaned) | 5 | in progress |
 
 **v4** Switching from LoRA (which only trains ~1.6% of the model's weights) to full fine-tuning, and from 3 epochs to 5, finally crossed into a net win: 66.4% vs. 68.7% baseline.
 
@@ -54,5 +56,7 @@ The pipeline and demo work end to end. The table below is every fine-tuning run 
 
 **v7** is the current best result, and tests the data lever directly: the dataset builder now pulls multiple weeks of Billboard charts (deduped by artist/title) instead of just the current week, since a single week is always exactly 100 songs and structurally capped out at ~53 usable tracks for any larger target. This got the training set to 102 cleaned songs (up from 34), same method/epochs as v5 — and the jump in data alone pushed WER down to 52.4%, a 17.2pp improvement over its own baseline (v7 uses a different, larger eval split than v4-v6, so its baseline WER isn't directly comparable to theirs — the fair comparison is each run's own improvement margin, where v7's 17.2pp beats v5's 11.2pp). Confirms more/cleaner training data is a bigger lever here than epoch count or LoRA vs. full fine-tuning.
 
-**v8** (in progress) pushes that same lever further: pulling up to 100 weeks of Billboard history (vs. v7's 20) for a 400-song target, since week-to-week chart overlap means raw-row counts and usable-song counts don't scale linearly — getting meaningfully past 102 clean songs needs a lot more weeks, not proportionally more. Also planning to test more training epochs on the larger set, since v6-short showed overfitting isn't straightforwardly costing WER — a bigger, more diverse training set may tolerate more epochs than the 34/102-song runs did.
+**v8** (248 songs, 8 epochs): landed worse than v7 (54.6% vs. 52.4% WER) — train_loss collapsed to ~0.003 while eval_loss rose to 1.73, the worst overfitting of any full-finetune run. More data didn't buy tolerance for more epochs; epoch count needs tuning relative to dataset size, not pushed up whenever data grows.
+
+**v9** (in progress) isolates chunk granularity instead of data/epochs: same dataset and epoch count as v7, but training on ~5s chunks instead of the ~30s multi-line blocks every prior run used. Our `lyrics_segments` are already line-level, and the reference paper trains on ~4s spans close to single lines rather than concatenated blocks — this tests whether matching that granularity helps, independent of data size.
 

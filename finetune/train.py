@@ -148,21 +148,30 @@ def _group_into_chunks(segments: list[dict], chunk_duration: float = CHUNK_DURAT
 WHISPER_MAX_LABEL_TOKENS = 448
 
 
-def _build_hf_dataset(records: list[dict], processor: WhisperProcessor) -> Dataset:
+def _build_hf_dataset(
+    records: list[dict], processor: WhisperProcessor, chunk_duration: float = CHUNK_DURATION
+) -> Dataset:
     """Turn manifest records into a HF Dataset with input_features + labels.
-    Each song's lyrics_segments are grouped into ~30s chunks
+    Each song's lyrics_segments are grouped into ~chunk_duration-long chunks
     (_group_into_chunks); each chunk becomes one training example, with its
     audio sliced from vocals_path and its concatenated line text as the
     label.
 
+    chunk_duration defaults to CHUNK_DURATION (30s, Whisper's native input
+    window) but is exposed here so train() can sweep it -- the reference
+    paper (Frangiadaki et al., arXiv:2609.11302) trains on much shorter
+    spans (mean 4s, close to one lyric line) rather than multi-line ~30s
+    blocks; see EXPERIMENTS.md's chunk-granularity entry for why shorter
+    chunks are worth testing as their own variable, independent of LR/epochs.
+
     _group_into_chunks only bounds chunks by audio duration, not token
-    count -- a dense/fast-lyrics song's 30s window can still tokenize past
+    count -- a dense/fast-lyrics song's chunk can still tokenize past
     WHISPER_MAX_LABEL_TOKENS even though its audio fits Whisper's input
     window fine (confirmed: Taylor Swift's "Babylon" produced a 509-token
-    chunk against whisper-base's 448 cap, crashing a real training run
-    27 steps in). Chunks over the cap are dropped here rather than
-    truncated, since silently cutting lyrics mid-line would train the
-    model on a corrupted label.
+    chunk against whisper-base's 448 cap at the default 30s duration,
+    crashing a real training run 27 steps in). Chunks over the cap are
+    dropped here rather than truncated, since silently cutting lyrics
+    mid-line would train the model on a corrupted label.
     """
     chunk_audio_paths = []
     chunk_starts = []
@@ -170,7 +179,7 @@ def _build_hf_dataset(records: list[dict], processor: WhisperProcessor) -> Datas
     chunk_texts = []
 
     for record in records:
-        chunks = _group_into_chunks(record["lyrics_segments"])
+        chunks = _group_into_chunks(record["lyrics_segments"], chunk_duration=chunk_duration)
         for chunk in chunks:
             chunk_audio_paths.append(record["vocals_path"])
             chunk_starts.append(chunk["start"])
@@ -363,6 +372,7 @@ def train(
     run_name: str | None = None,
     report_to_wandb: bool = False,
     full_finetune: bool = False,
+    chunk_duration: float = CHUNK_DURATION,
 ) -> dict:
     """Fine-tune base_model_id on the manifest's train split, using the
     eval split for periodic validation, and save to output_dir (defaults
@@ -391,6 +401,11 @@ def train(
     logs). report_to_wandb additionally logs the run to Weights & Biases
     (requires `wandb login` to have been run already).
 
+    chunk_duration overrides CHUNK_DURATION (default 30s) for how long
+    each _group_into_chunks training example is allowed to span -- see
+    _build_hf_dataset's docstring and EXPERIMENTS.md for why shorter
+    chunks (closer to single-lyric-line length) are worth testing.
+
     Returns {run_key, output_dir, final_train_loss, final_eval_loss,
     num_train_songs} — run_key and output_dir are what evaluate.py's
     compare_baseline_vs_finetuned needs next.
@@ -407,8 +422,8 @@ def train(
     train_records, eval_records = load_manifest(manifest_path)
 
     processor = WhisperProcessor.from_pretrained(base_model_id, task="transcribe")
-    train_dataset = _build_hf_dataset(train_records, processor)
-    eval_dataset = _build_hf_dataset(eval_records, processor)
+    train_dataset = _build_hf_dataset(train_records, processor, chunk_duration=chunk_duration)
+    eval_dataset = _build_hf_dataset(eval_records, processor, chunk_duration=chunk_duration)
 
     model = _build_full_model(base_model_id) if full_finetune else _build_lora_model(base_model_id)
     data_collator = _DataCollatorSpeechSeq2SeqWithPadding(processor=processor)

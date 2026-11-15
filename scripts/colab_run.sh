@@ -44,7 +44,7 @@ colab upload -s "$SESSION" finetune/evaluate.py /content/finetune/evaluate.py
 colab upload -s "$SESSION" finetune/dataset.py /content/finetune/dataset.py
 colab upload -s "$SESSION" finetune/__init__.py /content/finetune/__init__.py
 colab upload -s "$SESSION" scripts/train_model.py /content/scripts/train_model.py
-colab upload -s "$SESSION" data/finetune_manifest_v2.json /content/data/finetune_manifest_v2.json
+colab upload -s "$SESSION" data/finetune_manifest_v3.json /content/data/finetune_manifest_v3.json
 
 echo "== Running training =="
 # -m scripts.train_model, not a bare file path -- running it as a path
@@ -62,4 +62,19 @@ HF_TOKEN_ENV=""
 if [ -n "${HF_TOKEN:-}" ]; then
   HF_TOKEN_ENV="HF_TOKEN=$HF_TOKEN "
 fi
+
+# Foreground, not detached via nohup -- tried detaching (nohup + background)
+# after v7/v8 lost their SSH channel mid-run, but on v9 that made things
+# worse: the runtime itself got recycled entirely ("this runtime does not
+# expose the /colab/ssh endpoint"), not just the SSH connection, while the
+# job was still in its early dataset-build phase. Suspect Colab's own
+# idle-runtime detection watches the SSH connection/kernel activity itself,
+# not whether a backgrounded process is running under it -- a detached
+# launch opens the channel for a couple seconds, then closes it, which may
+# look idle to Colab even though work is ongoing. Keeping the SSH channel
+# open for the run's full duration (foreground) is what actually kept
+# earlier runs (e.g. v7's training) alive for 12+ minutes; drops still
+# happen sometimes (laptop sleep is the leading suspect -- see
+# EXPERIMENTS.md), but foreground is the safer default until the idle-
+# detection theory is confirmed either way.
 colab ssh -s "$SESSION" -- "cd /content && ${HF_TOKEN_ENV}AUTOSUB_DRIVE_ROOT=/content/drive/MyDrive python -m scripts.train_model"

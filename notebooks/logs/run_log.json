@@ -105,5 +105,33 @@
     "finetuned_wer": 0.6309766022380467,
     "notes": "Phase 3: fewer epochs (2 vs v5's 5) of full fine-tune, same clean data, to fix v5's overfitting (train_loss 0.03, eval_loss flat ~1.2-1.3). Result: the train/eval loss gap is genuinely healthier (0.15 vs 1.08, vs v5's 0.03 vs 1.28) but WER is worse (63.1% vs v5's 55.1%, barely better than the 66.2% baseline). So overfitting isn't simply costing WER here -- v5's extra epochs bought real accuracy even while memorizing the train split; cutting epochs lost more than it fixed. v5 remains the best result so far. Next lever to try: more data (the in-progress 200-song build) rather than fewer epochs, so the model has enough train diversity to keep training longer without just memorizing.",
     "timestamp": "2026-11-12T09:14:05.656194+00:00"
+  },
+  {
+    "run": "whisper-full-v7_20261113-0031",
+    "method": "Full fine-tune",
+    "compute": "GPU (fp16)",
+    "songs": 102,
+    "epochs": 5,
+    "lr": 0.0001,
+    "train_loss": 0.08001068979501724,
+    "eval_loss": 1.3220767974853516,
+    "baseline_wer": 0.6951199060875398,
+    "finetuned_wer": 0.5235619654536308,
+    "notes": "First run on the expanded 119-song deduped dataset (up from 34 cleaned songs for v5/LoRA-ablation/v6-short) -- more training diversity is the lever being tested here, not epochs or method. Training crashed once before this (Taylor Swift 'Babylon' produced a 509-token label chunk against Whisper's 448-token cap); fixed by dropping over-cap chunks in _build_hf_dataset. This run completed training cleanly but the SSH session dropped during/after eval, so this eval was re-run standalone against the saved checkpoint.",
+    "timestamp": "2026-11-13T03:15:53.111257+00:00"
+  },
+  {
+    "run": "whisper-full-v8_20261113-1901",
+    "method": "Full fine-tune",
+    "compute": "GPU (fp16)",
+    "songs": 190,
+    "epochs": 8,
+    "lr": 0.0001,
+    "train_loss": 0.002737348899245262,
+    "eval_loss": 1.7295171022415161,
+    "baseline_wer": 0.7227216720668097,
+    "finetuned_wer": 0.5464336238762378,
+    "notes": "Scales both levers past v7: much larger dataset (v3 manifest, 248 songs pulled from 100 weeks of Billboard history vs. v7's 102-song/20-week set) and more epochs (8 vs. v7's 5), testing whether a bigger/more diverse training set tolerates more training before memorizing. Result: worse than v7 (54.6% vs. 52.4% WER), and train/eval loss confirms why -- train_loss collapsed to ~0.003 (near-total memorization) while eval_loss rose to 1.73, the worst of any full-finetune run so far (vs. v7's 1.32, v5's 1.28). So 8 epochs overfit on 190 songs; more data did NOT buy tolerance for more epochs the way the v6-short writeup speculated -- that conclusion doesn't generalize to larger datasets. v7's 5 epochs remains the best epoch/data-size balance found so far. This run's SSH session dropped at step 668/1336 (end of epoch 4/8) because colab_run.sh launched training in the foreground at the time; resumed from the epoch-4 checkpoint for epochs 5-8 rather than restarting. colab_run.sh now launches training detached (nohup) so this shouldn't recur.",
+    "timestamp": "2026-11-13T20:41:36.107334+00:00"
   }
 ]

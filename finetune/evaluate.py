@@ -51,15 +51,20 @@ def load_eval_records(manifest_path: Path) -> list[dict]:
     return [r for r in records if r["split"] == "eval"]
 
 
-def _build_eval_chunks(records: list[dict]) -> list[dict]:
+def _build_eval_chunks(records: list[dict], chunk_duration: float = CHUNK_DURATION) -> list[dict]:
     """Expand eval records into individual (audio_path, start, end,
-    reference_text) chunks, using the same ~30s grouping finetune.train
-    uses for training — so eval exercises the model under the same input
-    shape it was trained/will run on, not whole untruncated songs.
+    reference_text) chunks, using the same grouping finetune.train uses for
+    training — so eval exercises the model under the same input shape it
+    was trained/will run on, not whole untruncated songs.
+
+    chunk_duration must match whatever the checkpoint being evaluated was
+    trained with (see finetune.train.train's chunk_duration param) — a
+    mismatch here would score the model on an input shape it never saw
+    during training, making the WER comparison invalid.
     """
     chunks = []
     for record in records:
-        for chunk in _group_into_chunks(record["lyrics_segments"], chunk_duration=CHUNK_DURATION):
+        for chunk in _group_into_chunks(record["lyrics_segments"], chunk_duration=chunk_duration):
             chunks.append({
                 "audio_path": record["vocals_path"],
                 "start": chunk["start"],
@@ -158,6 +163,7 @@ def compare_baseline_vs_finetuned(
     checkpoint_dir: Path,
     base_model_id: str = BASELINE_MODEL_ID,
     run_name: str | None = None,
+    chunk_duration: float = CHUNK_DURATION,
 ) -> dict:
     """Top-level: load the eval split, chunk it, transcribe with both the
     baseline and fine-tuned checkpoints, and report WER for each.
@@ -168,6 +174,11 @@ def compare_baseline_vs_finetuned(
     goes to, so a run's train + eval history live side by side regardless
     of whether it was run from this CLI script or the Colab notebook.
 
+    chunk_duration must match the finetuned checkpoint's training
+    chunk_duration (see finetune.train.train) — passed through to
+    _build_eval_chunks for both models, so baseline and finetuned are
+    compared on identical input chunking either way.
+
     Returns {baseline: {wer, predictions, references},
              finetuned: {wer, predictions, references}}.
     """
@@ -177,7 +188,7 @@ def compare_baseline_vs_finetuned(
             f"No eval-split records found in {manifest_path} — "
             "nothing to evaluate against."
         )
-    chunks = _build_eval_chunks(eval_records)
+    chunks = _build_eval_chunks(eval_records, chunk_duration=chunk_duration)
 
     baseline_model, baseline_processor = _load_baseline_model(base_model_id)
     baseline_result = evaluate_model(chunks, baseline_model, baseline_processor)
