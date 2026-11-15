@@ -33,18 +33,18 @@ Training/eval run as plain `.py` scripts (`scripts/train_model.py`) against T4 G
 
 The pipeline and demo work end to end. The table below is every fine-tuning run so far, each measured as baseline vs. fine-tuned WER on a held-out set of artists the model never trained on.
 
-| Run | Method | Songs | Epochs | WER (baseline → fine-tuned) |
-|---|---|---|---|---|
-| v1 | LoRA | 9 | 3 | 69.2% → 88.4% |
-| v2 | LoRA | 50 | 3 | 88.3% → 94.7% |
-| v3 | LoRA | 100 | 3 | 68.7% → 80.4% |
-| v4 | Full fine-tune | 81 | 5 | 68.7% → 66.4% |
-| v5 | Full fine-tune | 34 (cleaned) | 5 | 66.2% → 55.1% |
-| LoRA ablation | LoRA | 34 (cleaned) | 5 | 66.2% → 58.6% |
-| v6-short | Full fine-tune | 34 (cleaned) | 2 | 66.2% → 63.1% |
-| v7 | Full fine-tune | 102 (cleaned) | 5 | 69.5% → 52.4% |
-| v8 | Full fine-tune | 190 (cleaned) | 8 | 72.3% → 54.6% |
-| v9 | Full fine-tune | 190 (cleaned) | 5 | in progress |
+| Run | Method | Songs | Epochs | Chunk size | WER (baseline → fine-tuned) |
+|---|---|---|---|---|---|
+| v1 | LoRA | 9 | 3 | 30s | 69.2% → 88.4% |
+| v2 | LoRA | 50 | 3 | 30s | 88.3% → 94.7% |
+| v3 | LoRA | 100 | 3 | 30s | 68.7% → 80.4% |
+| v4 | Full fine-tune | 81 | 5 | 30s | 68.7% → 66.4% |
+| v5 | Full fine-tune | 34 (cleaned) | 5 | 30s | 66.2% → 55.1% |
+| LoRA ablation | LoRA | 34 (cleaned) | 5 | 30s | 66.2% → 58.6% |
+| v6-short | Full fine-tune | 34 (cleaned) | 2 | 30s | 66.2% → 63.1% |
+| v7 | Full fine-tune | 102 (cleaned) | 5 | 30s | 69.5% → 52.4% |
+| v8 | Full fine-tune | 190 (cleaned) | 8 | 30s | 72.3% → 54.6% |
+| v9 | Full fine-tune | 190 (cleaned) | 5 | 5s | in progress |
 
 **v4** Switching from LoRA (which only trains ~1.6% of the model's weights) to full fine-tuning, and from 3 epochs to 5, finally crossed into a net win: 66.4% vs. 68.7% baseline.
 
